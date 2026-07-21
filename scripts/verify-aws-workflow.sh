@@ -69,4 +69,7 @@ request -X POST -d '{}' "${BASE_URL}/jobs/${FAILED_JOB_ID}/retry" >/dev/null
 wait_for_expression "s.jobs.some((j) => j.id === '${FAILED_JOB_ID}' && j.state === 'COMPLETE' && j.attempts === 1)" 'AWS operator replay completion'
 
 PACKET_BYTES="$(wc -c < "${PACKET_FILE}" | tr -d ' ')"
-echo "AWS workflow verified at ${APPLICATION_URL}: PDF=${PACKET_BYTES} bytes, signed S3=ok, attempts=3, DLQ=${DLQ_COUNT}, replay=complete"
+request -X POST "${BASE_URL}/reset" >/dev/null
+aws --profile "${AWS_PROFILE}" --region "${AWS_REGION}" sqs purge-queue --queue-url "${DLQ_URL}"
+
+echo "AWS workflow verified at ${APPLICATION_URL}: PDF=${PACKET_BYTES} bytes, signed S3=ok, attempts=3, DLQ=${DLQ_COUNT}, replay=complete, cleanup=reset+dlq-purged"
