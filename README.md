@@ -15,7 +15,7 @@ The repository is public and uses only synthetic people, events, assignments, an
 - Nginx reverse proxy and production Angular hosting
 - Docker Compose local environment with separate web, API, worker, MySQL, and LocalStack services
 - GitHub Actions builds, tests, dependency/secret scans, and a full S3/SQS integration workflow
-- AWS-ready boundaries for ECS, RDS, S3, SQS, and CloudWatch deployment
+- CloudFormation deployment to CloudFront, private S3, ALB, ARM64 ECS Fargate, RDS MySQL, SQS/DLQ, Secrets Manager, and CloudWatch
 
 ## Run the complete demo
 
@@ -92,7 +92,9 @@ npm audit --audit-level=high
 
 The async script expects the Compose stack and proves PDF generation, private S3 storage, signed retrieval, worker completion, three failed attempts, a new DLQ arrival, and successful replay. The same gate runs in GitHub Actions. Operational details and the production-readiness boundary are documented in [the runbook](docs/RUNBOOK.md), [architecture notes](docs/ARCHITECTURE.md), and [FINISHER report](docs/FINISHER_REPORT.md).
 
-This repository is ready as a Level 0 local portfolio demo. It is not production-ready: the role selector is deliberately not identity authentication, cloud deployment is not provisioned, and recovery/monitoring controls are not configured.
+The same workflow can be deployed and proved on AWS with `./scripts/deploy-aws.sh` and `./scripts/verify-aws-workflow.sh`. GitHub Actions uses branch-scoped OIDC and supports an operator-selected immutable-image rollback. See [the AWS deployment guide](docs/AWS_DEPLOYMENT.md) for architecture, operations, cost, and the deliberate identity boundary.
+
+This repository is ready as a hosted portfolio demo. It is not a production university system: the role selector is deliberately not identity authentication, the seeded records are synthetic, and production ownership and privacy controls are intentionally out of scope.
 
 ## Original visual asset
 

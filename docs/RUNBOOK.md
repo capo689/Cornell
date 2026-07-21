@@ -48,7 +48,9 @@ API access logs are structured JSON and include method, path, status, duration, 
 
 ## Release and rollback
 
-GitHub Actions must pass lint, builds, API unit/integration tests, Angular browser tests, dependency audit, secret scan, and the Compose S3/SQS workflow. Run `./scripts/verify-async-workflow.sh` locally against the running stack for the same proof. For this local demo, rollback means checking out the last known-good commit and rebuilding Compose images. No hosted release, database backup schedule, or automated recovery objective exists; those are required before production use.
+GitHub Actions must pass lint, builds, API unit/integration tests, Angular browser tests, dependency audit, secret scan, and the Compose S3/SQS workflow. Run `./scripts/verify-async-workflow.sh` locally against the running stack for the same proof.
+
+The AWS deployment workflow uses immutable commit-tagged ECR images, short-lived GitHub OIDC credentials, ECS deployment circuit breakers, service-stability waits, and a public smoke test. Manual dispatch with an existing image tag performs an operator-selected application rollback. Run `./scripts/verify-aws-workflow.sh` after a release for the managed S3/SQS recovery proof. Full commands and limitations are in [AWS deployment](AWS_DEPLOYMENT.md).
 
 ## Escalation boundary
 

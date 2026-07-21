@@ -2,7 +2,7 @@
 
 ## Scope
 
-Bandboard is a Level 0, synthetic-data portfolio demo. It demonstrates an enterprise-shaped workflow without claiming a production identity system, live university integration, or deployed cloud infrastructure.
+Bandboard is a synthetic-data portfolio demo. It demonstrates an enterprise-shaped workflow without claiming a production identity system or live university integration. The same application contracts run locally against LocalStack and in a managed AWS deployment.
 
 ```mermaid
 flowchart LR
@@ -42,3 +42,7 @@ The database is private to the Compose network. Only Nginx exposes a host port. 
 ## Decisions
 
 Architectural decisions are recorded under [`docs/adr`](adr/0001-demo-identity-boundary.md).
+
+## AWS mapping
+
+In AWS, CloudFront is the only browser entry point. It serves Angular from a private S3 origin and sends `/api/*` through an ALB to the API service. The API and worker are separate ARM64 ECS Fargate services; RDS is non-public; packet S3 access is split between API signing and worker writes; SQS redrives after three receives; and CloudWatch owns durable logs and service alarms. GitHub Actions assumes a short-lived OIDC role restricted to `capo689/Cornell` on `main`. See [AWS deployment](AWS_DEPLOYMENT.md).

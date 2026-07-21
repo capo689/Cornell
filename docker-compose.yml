@@ -78,6 +78,7 @@ services:
       DB_USER: bandboard
       DB_PASSWORD: bandboard
       DB_NAME: bandboard
+      RUN_MIGRATIONS: 'false'
       AWS_REGION: us-east-1
       AWS_ENDPOINT_URL: http://localstack:4566
       S3_PACKET_BUCKET: bandboard-packets

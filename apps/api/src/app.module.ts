@@ -42,7 +42,7 @@ import { WorkerService } from './worker.service';
         Instrument,
       ],
       migrations: [InitialSchema1760000000000, AsyncWorkflow1760000001000],
-      migrationsRun: true,
+      migrationsRun: process.env.RUN_MIGRATIONS !== 'false',
       synchronize: false,
       retryAttempts: 8,
       retryDelay: 1500,

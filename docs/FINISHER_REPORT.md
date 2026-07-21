@@ -2,26 +2,25 @@
 
 ## Executive summary
 
-**Launch recommendation:** ready for a Level 0 local portfolio demonstration; do not launch publicly or use real data.
+**Launch recommendation:** ready for a hosted synthetic-data portfolio demonstration; do not use real university data or treat the demo role switcher as identity.
 
-Bandboard now has a coherent, testable golden path; real database persistence and migrations; server-owned business rules; input validation; role-boundary demonstration; rate limiting; audit and job visibility; a live, server-cached weather integration; responsive error/loading states; structured request logs; container builds; and a CI quality gate. Its long-running path is no longer architectural scaffolding: a separate worker consumes SQS messages, generates a real PDF, stores it privately in S3-compatible storage, and exposes a short-lived signed download. A controlled drill proves three attempts, DLQ redrive, visible failure state, and operator replay.
+Bandboard has a coherent, testable golden path; real database persistence and migrations; server-owned business rules; input validation; role-boundary demonstration; rate limiting; audit and job visibility; a live, server-cached weather integration; responsive error/loading states; structured request logs; container builds; and CI gates. Its long-running path is not architectural scaffolding: a separate ECS worker consumes SQS messages, generates a real PDF, stores it in private S3, and exposes a short-lived signed download. A controlled live-AWS drill proves three attempts, DLQ redrive, visible failure state, and operator replay.
 
-Overall readiness is **92/100 for Level 0** and **55/100 for a public production service**. The difference is intentional: no real identity provider, hosted AWS environment, centralized monitoring, backup/restore evidence, or operational ownership has been established.
+Overall readiness is **96/100 for the hosted portfolio scope** and **70/100 for a real production service**. The difference is intentional: real identity, institutional authorization, tested database restore, named alert ownership, privacy governance, and operational support are outside this demo.
 
 ## P0/P1/P2 risk table
 
 | Priority             | Risk                                                                                | Current control                                                                                           | Required remediation                                                                                                          |
 | -------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| P0 for public launch | Demo headers are forgeable and are not authentication                               | Local-only scope, synthetic data, server guard demonstrates the seam                                      | Integrate OIDC, validate tokens, derive actor/roles server-side, and test token expiry plus cross-role access                 |
+| P0 for real use      | Demo headers are forgeable and are not authentication                               | Synthetic-only scope, explicit UI label, server guard demonstrates the seam                               | Integrate OIDC, validate tokens, derive actor/roles server-side, and test token expiry plus cross-role access                 |
 | P0 for real data     | No approved privacy, retention, backup, or recovery controls                        | Repository and UI use fictional data only                                                                 | Classify data, minimize fields, encrypt managed storage, document retention/deletion, prove backup restore                    |
-| P1                   | No hosted staging/production environment or HTTPS edge                              | Production-style Docker images and private DB network locally                                             | Provision isolated environments, managed secrets, TLS, health checks, rollout/rollback, and smoke tests                       |
-| P1                   | Logs and health are local only                                                      | Structured request logs, request IDs, health endpoint                                                     | Add centralized logs, exception tracking, metrics, alert thresholds, and an incident owner                                    |
-| P1                   | Queue and storage alerts are not hosted                                             | Separate worker, durable attempt state, three-receive DLQ, signed S3 retrieval, recovery drill            | Add CloudWatch queue-age/DLQ alarms, worker error metrics, dashboards, and named alert ownership during AWS deployment        |
+| P1                   | No named operational owner or alert recipient                                       | CloudWatch logs; API health; queue-age, DLQ, and unhealthy-target alarms all verified `OK`                 | Add a verified notification target, exception aggregation, escalation policy, and named owner                                 |
+| P1                   | Backup exists but restore objective is unproved                                     | Encrypted RDS, one-day automated backups, deletion snapshot policy                                        | Exercise restore, measure RPO/RTO, and document acceptance                                                                     |
 | P2                   | Rate limit is single-process and uniform                                            | 100 requests/minute in-process guard                                                                      | Use distributed limiting and route/cost-specific budgets if scaled horizontally                                               |
 | P2                   | Accessibility was manually checked but not fully automated                          | Semantic interface, keyboard focus, responsive browser QA                                                 | Add automated axe checks and screen-reader acceptance testing                                                                 |
 | P2                   | Audit reports three moderate development-tool findings through Angular CLI/MCP/Hono | No high or critical findings; vulnerable static-serving path is not used by the shipped Linux Nginx image | Reassess after a non-breaking Angular CLI fix is available; do not force a major downgrade/upgrade without regression testing |
 
-No P0 blocks the explicitly scoped local synthetic-data demo. The first two rows become blockers the moment scope changes to public access or real data.
+No P0 blocks the explicitly scoped hosted synthetic-data demo. The first two rows become blockers the moment scope changes to real or trusted operational data.
 
 ## 13-layer scorecard
 
@@ -31,29 +30,24 @@ No P0 blocks the explicitly scoped local synthetic-data demo. The first two rows
 | 2. APIs and backend logic          |          9/10 | DTO validation, Swagger, idempotent publish, transaction, queued long-running work, server-owned rules, cached Open-Meteo adapter, negative tests             |
 | 3. Database and storage            |          9/10 | MySQL source of truth, checked-in migrations, synchronization disabled, deterministic packet keys, private S3 objects with checksums; no backup restore proof |
 | 4. Auth and permissions            |          5/10 | Server guard rejects member mutation, but deliberately forgeable demo headers are not identity                                                                |
-| 5. Hosting and deployment          |          7/10 | Nginx/API images and Compose verification; no hosted environment or TLS                                                                                       |
-| 6. Cloud and compute               |          8/10 | Separate worker, SQS retry/DLQ policy, private S3 packet path, and LocalStack proof; AWS resources are not yet deployed                                       |
-| 7. CI/CD and version control       |          9/10 | Lint, builds, unit/e2e/browser tests, audit, secret scan, and full Compose S3/SQS integration in PR CI                                                        |
-| 8. Security and data protection    |          7/10 | Synthetic data, Helmet, CORS, validation, private DB, no committed application secrets; no managed secrets/WAF/privacy program                                |
+| 5. Hosting and deployment          |          9/10 | CloudFront HTTPS, immutable ECR images, ECS circuit-breaker rollback, stability wait, smoke test, and manual image rollback                                   |
+| 6. Cloud and compute               |          9/10 | ARM64 API/worker services, private RDS and S3, SQS/DLQ, least-privilege task roles, and live workflow proof                                                    |
+| 7. CI/CD and version control       |          9/10 | PR quality gates plus branch-scoped GitHub OIDC deployment with no long-lived AWS key                                                                         |
+| 8. Security and data protection    |          8/10 | Synthetic data, managed DB secret, encrypted private storage, CloudFront-only ALB ingress, security headers; no OIDC/WAF/privacy program                     |
 | 9. Rate limiting and cost controls |          8/10 | Global in-process limiter; no paid API or AI feature; distributed policy unnecessary at Level 0                                                               |
-| 10. Caching and CDN                |          7/10 | Static content served efficiently by Nginx; no CDN, appropriate for local scope                                                                               |
-| 11. Load balancing and scaling     |          7/10 | Stateless API, separate worker, and external DB/queue/storage seams; no load test or horizontal deployment                                                    |
-| 12. Error tracking and logs        |          8/10 | Structured access logs, request IDs, safe client errors, audit trail; no aggregation/alerts                                                                   |
-| 13. Availability and recovery      |          8/10 | Health checks, startup retries, runbook, deterministic reset, job attempts, DLQ and replay proof; no SLO, backup, or failover                                 |
+| 10. Caching and CDN                |          9/10 | CloudFront static caching, immutable asset policy, uncached API behavior, private OAC S3 origin                                                                |
+| 11. Load balancing and scaling     |          8/10 | ALB health checks, stateless API, separate worker, external state seams, circuit breaker; no load test or autoscaling                                          |
+| 12. Error tracking and logs        |          9/10 | CloudWatch API/worker logs, structured request IDs, audit trail, three infrastructure alarms; no exception aggregator or recipient                            |
+| 13. Availability and recovery      |          9/10 | Managed health checks, automatic RDS backup, deterministic reset, DLQ/replay proof, deployment rollback; no restore drill or SLO                               |
 
 ## Remediation plan
 
-### Before any public demonstration environment
-
-1. Add OIDC authentication and immutable server-derived roles/actor identity.
-2. Provision a TLS-only staging environment with managed secrets and no public database.
-3. Add centralized error/log monitoring, uptime checks, and named incident ownership.
-4. Implement and exercise database backup/restore and deployment rollback.
-5. Map the verified LocalStack queue, DLQ, bucket, worker, and IAM boundaries to managed AWS resources and add alarms.
-
 ### Before real operational use
 
-Complete privacy and retention review, ownership-level authorization tests, capacity/load testing, distributed rate limiting, security review, accessibility acceptance, recovery objectives, and operational support procedures.
+1. Add institutional OIDC and immutable server-derived actor/role claims.
+2. Add a verified alarm recipient, exception aggregation, uptime monitor, and incident owner.
+3. Exercise database restore and document measured RPO/RTO.
+4. Complete privacy/retention review, authorization tests, capacity testing, distributed rate limiting, security review, accessibility acceptance, and operational support procedures.
 
 ## Verification performed
 
@@ -65,6 +59,10 @@ Complete privacy and retention review, ownership-level authorization tests, capa
 - Desktop and 390×844 responsive visual checks
 - Rendered the signed S3 packet with Poppler; confirmed one-page Letter output and visually inspected the final artifact
 - Docker Compose/LocalStack integration: real PDF, signed S3 retrieval, three SQS receives, new DLQ message, successful replay
+- AWS CloudFormation `CREATE_COMPLETE`; API and worker each one desired/running task with completed rollouts; all three alarms `OK`
+- Live CloudFront proof: real PDF, signed private-S3 retrieval, three SQS receives, one DLQ arrival, and successful replay
+- Live coordinator/member visual QA at the CloudFront URL: supplied logos and hero imagery, correct 82% readiness ring, live weather, and zero browser warnings/errors
+- Startup-log review caught and corrected concurrent migration ownership; only the API now runs schema migrations
 - Dependency audit: 0 critical/high, 3 moderate development-tool findings; CI high-severity gate and secret scan configured
 
 Payments, AI cost controls, file uploads, real notifications, and data ownership across multiple accounts are not applicable to this Level 0 build because those capabilities are not present.
