@@ -25,12 +25,29 @@ Resources:
     Type: AWS::Budgets::Budget
     Properties:
       Budget:
-        BudgetName: bandboard-monthly-cost
+        BudgetName: bandboard-monthly-cost-alerts
         BudgetLimit:
           Amount: !Ref MonthlyBudgetUsd
           Unit: USD
         BudgetType: COST
         TimeUnit: MONTHLY
+      NotificationsWithSubscribers:
+        - Notification:
+            ComparisonOperator: GREATER_THAN
+            NotificationType: ACTUAL
+            Threshold: 80
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - Address: adam@agency689.com
+              SubscriptionType: EMAIL
+        - Notification:
+            ComparisonOperator: GREATER_THAN
+            NotificationType: FORECASTED
+            Threshold: 100
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - Address: adam@agency689.com
+              SubscriptionType: EMAIL
 
   WebBucket:
     Type: AWS::S3::Bucket

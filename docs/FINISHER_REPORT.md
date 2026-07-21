@@ -14,7 +14,7 @@ Overall readiness is **96/100 for the hosted portfolio scope** and **70/100 for 
 | -------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | P0 for real use      | Demo headers are forgeable and are not authentication                               | Synthetic-only scope, explicit UI label, server guard demonstrates the seam                               | Integrate OIDC, validate tokens, derive actor/roles server-side, and test token expiry plus cross-role access                 |
 | P0 for real data     | No approved privacy, retention, backup, or recovery controls                        | Repository and UI use fictional data only                                                                 | Classify data, minimize fields, encrypt managed storage, document retention/deletion, prove backup restore                    |
-| P1                   | No named operational owner or alert recipient                                       | CloudWatch logs; API health; queue-age, DLQ, and unhealthy-target alarms all verified `OK`                 | Add a verified notification target, exception aggregation, escalation policy, and named owner                                 |
+| P1                   | No named operational owner or incident process                                      | CloudWatch logs and alarms; cost alerts route to a verified portfolio-owner email                          | Add exception aggregation, uptime monitoring, an escalation policy, and named incident owner                                  |
 | P1                   | Backup exists but restore objective is unproved                                     | Encrypted RDS, one-day automated backups, deletion snapshot policy                                        | Exercise restore, measure RPO/RTO, and document acceptance                                                                     |
 | P2                   | Rate limit is single-process and uniform                                            | 100 requests/minute in-process guard                                                                      | Use distributed limiting and route/cost-specific budgets if scaled horizontally                                               |
 | P2                   | Accessibility was manually checked but not fully automated                          | Semantic interface, keyboard focus, responsive browser QA                                                 | Add automated axe checks and screen-reader acceptance testing                                                                 |
@@ -37,7 +37,7 @@ No P0 blocks the explicitly scoped hosted synthetic-data demo. The first two row
 | 9. Rate limiting and cost controls |          8/10 | Global in-process limiter; no paid API or AI feature; distributed policy unnecessary at Level 0                                                               |
 | 10. Caching and CDN                |          9/10 | CloudFront static caching, immutable asset policy, uncached API behavior, private OAC S3 origin                                                                |
 | 11. Load balancing and scaling     |          8/10 | ALB health checks, stateless API, separate worker, external state seams, circuit breaker; no load test or autoscaling                                          |
-| 12. Error tracking and logs        |          9/10 | CloudWatch API/worker logs, structured request IDs, audit trail, three infrastructure alarms; no exception aggregator or recipient                            |
+| 12. Error tracking and logs        |          9/10 | CloudWatch API/worker logs, structured request IDs, audit trail, three infrastructure alarms, budget email; no exception aggregator                          |
 | 13. Availability and recovery      |          9/10 | Managed health checks, automatic RDS backup, deterministic reset, DLQ/replay proof, deployment rollback; no restore drill or SLO                               |
 
 ## Remediation plan
@@ -45,7 +45,7 @@ No P0 blocks the explicitly scoped hosted synthetic-data demo. The first two row
 ### Before real operational use
 
 1. Add institutional OIDC and immutable server-derived actor/role claims.
-2. Add a verified alarm recipient, exception aggregation, uptime monitor, and incident owner.
+2. Add exception aggregation, uptime monitoring, an escalation policy, and named incident owner.
 3. Exercise database restore and document measured RPO/RTO.
 4. Complete privacy/retention review, authorization tests, capacity testing, distributed rate limiting, security review, accessibility acceptance, and operational support procedures.
 

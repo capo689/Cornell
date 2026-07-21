@@ -40,6 +40,6 @@ The full remote verification resets synthetic data, covers the missing part, pub
 
 ## Cost and boundary
 
-The stack is intentionally cost-conscious: one small API task, one small worker task, one `db.t4g.micro` instance, no NAT Gateway, modest log retention, and S3 lifecycle rules. Actual cost varies by use and region; the template creates a USD 75 monthly AWS Budget as a tracking control. Add a verified notification subscriber in AWS Billing before relying on it as an alert.
+The stack is intentionally cost-conscious: one small API task, one small worker task, one `db.t4g.micro` instance, no NAT Gateway, modest log retention, and S3 lifecycle rules. Actual cost varies by use and region; the template creates a USD 75 monthly AWS Budget and emails `adam@agency689.com` at 80% actual spend or 100% forecasted spend.
 
-This remains a public portfolio demo with synthetic data. Its role switcher is an explicit reviewability choice, not authentication. Before accepting real university data, add institutional OIDC, server-derived claims, WAF/rate-limit controls at the edge, named alert recipients, tested restore objectives, privacy review, and an owned incident process.
+This remains a public portfolio demo with synthetic data. Its role switcher is an explicit reviewability choice, not authentication. Before accepting real university data, add institutional OIDC, server-derived claims, WAF/rate-limit controls at the edge, tested restore objectives, privacy review, and an owned incident process.
