@@ -1,0 +1,107 @@
+name: Deploy Bandboard
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Existing ECR image tag to roll back the API and worker; leave blank to build this commit
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: bandboard-production
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: bandboard-api
+  ECS_CLUSTER: bandboard
+  API_SERVICE: bandboard-api
+  WORKER_SERVICE: bandboard-worker
+  APP_STACK: bandboard-app
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::984124409912:role/bandboard-github-deploy
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve deployment image
+        id: image
+        env:
+          REQUESTED_TAG: ${{ inputs.image_tag }}
+        run: |
+          ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
+          TAG="${REQUESTED_TAG:-${GITHUB_SHA::12}}"
+          URI="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${TAG}"
+          echo "tag=${TAG}" >> "${GITHUB_OUTPUT}"
+          echo "uri=${URI}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build and push API image
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.image_tag == '' }}
+        env:
+          IMAGE_URI: ${{ steps.image.outputs.uri }}
+        run: |
+          aws ecr get-login-password | docker login --username AWS --password-stdin "${IMAGE_URI%/*}"
+          docker buildx build --platform linux/arm64 -f apps/api/Dockerfile -t "${IMAGE_URI}" --push .
+
+      - name: Verify rollback image exists
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.image_tag != '' }}
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: aws ecr describe-images --repository-name "${ECR_REPOSITORY}" --image-ids imageTag="${IMAGE_TAG}" >/dev/null
+
+      - name: Register API and worker task revisions
+        env:
+          IMAGE_URI: ${{ steps.image.outputs.uri }}
+        run: |
+          for FAMILY in bandboard-api bandboard-worker; do
+            aws ecs describe-task-definition --task-definition "${FAMILY}" --query taskDefinition > "${FAMILY}.json"
+            CONTAINER="${FAMILY#bandboard-}"
+            jq --arg image "${IMAGE_URI}" --arg container "${CONTAINER}" '
+              del(.taskDefinitionArn,.revision,.status,.requiresAttributes,.compatibilities,.registeredAt,.registeredBy)
+              | (.containerDefinitions[] | select(.name == $container).image) = $image
+            ' "${FAMILY}.json" > "${FAMILY}-next.json"
+            aws ecs register-task-definition --cli-input-json "file://${FAMILY}-next.json" --query 'taskDefinition.taskDefinitionArn' --output text > "${FAMILY}-arn.txt"
+          done
+
+      - name: Deploy API and worker with circuit-breaker rollback
+        run: |
+          aws ecs update-service --cluster "${ECS_CLUSTER}" --service "${API_SERVICE}" --task-definition "$(cat bandboard-api-arn.txt)" --force-new-deployment >/dev/null
+          aws ecs update-service --cluster "${ECS_CLUSTER}" --service "${WORKER_SERVICE}" --task-definition "$(cat bandboard-worker-arn.txt)" --force-new-deployment >/dev/null
+          aws ecs wait services-stable --cluster "${ECS_CLUSTER}" --services "${API_SERVICE}" "${WORKER_SERVICE}"
+
+      - name: Build and publish frontend
+        run: |
+          npm ci
+          npm run build --workspace web
+          WEB_BUCKET="$(aws cloudformation describe-stacks --stack-name "${APP_STACK}" --query "Stacks[0].Outputs[?OutputKey=='WebBucketName'].OutputValue" --output text)"
+          DISTRIBUTION_ID="$(aws cloudformation describe-stacks --stack-name "${APP_STACK}" --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" --output text)"
+          aws s3 sync apps/web/dist/web/browser "s3://${WEB_BUCKET}" --delete --exclude index.html --cache-control 'public,max-age=31536000,immutable'
+          aws s3 cp apps/web/dist/web/browser/index.html "s3://${WEB_BUCKET}/index.html" --content-type text/html --cache-control 'no-cache,no-store,must-revalidate'
+          aws cloudfront create-invalidation --distribution-id "${DISTRIBUTION_ID}" --paths '/*' >/dev/null
+
+      - name: Smoke test public deployment
+        run: |
+          APPLICATION_URL="$(aws cloudformation describe-stacks --stack-name "${APP_STACK}" --query "Stacks[0].Outputs[?OutputKey=='ApplicationUrl'].OutputValue" --output text)"
+          for attempt in {1..60}; do
+            curl --fail --silent "${APPLICATION_URL}/api/demo/health" && exit 0
+            sleep 5
+          done
+          exit 1
