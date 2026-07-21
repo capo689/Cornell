@@ -56,6 +56,23 @@ interface DemoState {
   instruments: Instrument[];
   jobs: Array<{ id: string; type: string; state: string; createdAt: string }>;
   audit: Array<{ id: string; actor: string; action: string; detail: string; createdAt: string }>;
+  weather: WeatherSnapshot;
+}
+
+interface WeatherSnapshot {
+  source: string;
+  live: boolean;
+  location: string;
+  temperatureF: number | null;
+  apparentTemperatureF: number | null;
+  highF: number | null;
+  lowF: number | null;
+  precipitationProbability: number | null;
+  windMph: number | null;
+  windGustMph: number | null;
+  condition: string;
+  observedAt: string | null;
+  fetchedAt: string;
 }
 
 @Component({
@@ -84,6 +101,21 @@ export class App implements OnInit {
   readonly instruments = signal<Instrument[]>([]);
   readonly jobs = signal<DemoState['jobs']>([]);
   readonly audit = signal<DemoState['audit']>([]);
+  readonly weather = signal<WeatherSnapshot>({
+    source: 'Open-Meteo',
+    live: false,
+    location: 'Schoellkopf Field',
+    temperatureF: null,
+    apparentTemperatureF: null,
+    highF: null,
+    lowF: null,
+    precipitationProbability: null,
+    windMph: null,
+    windGustMph: null,
+    condition: 'Loading live conditions…',
+    observedAt: null,
+    fetchedAt: '',
+  });
   readonly apiConnected = signal(false);
   readonly loading = signal(true);
   readonly busy = signal<string | null>(null);
@@ -249,5 +281,6 @@ export class App implements OnInit {
     this.instruments.set(state.instruments);
     this.jobs.set(state.jobs);
     this.audit.set(state.audit);
+    this.weather.set(state.weather);
   }
 }

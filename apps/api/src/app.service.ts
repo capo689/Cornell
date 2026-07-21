@@ -18,6 +18,7 @@ import { Job } from './entities/job.entity';
 import { Member } from './entities/member.entity';
 import { RepertoireItem } from './entities/repertoire-item.entity';
 import { QueueService } from './queue.service';
+import { WeatherService } from './weather.service';
 
 @Injectable()
 export class AppService {
@@ -33,6 +34,7 @@ export class AppService {
     private readonly instruments: Repository<Instrument>,
     private readonly dataSource: DataSource,
     private readonly queue: QueueService,
+    private readonly weather: WeatherService,
   ) {}
 
   async getState() {
@@ -48,6 +50,7 @@ export class AppService {
       instruments: await this.instruments.find({ order: { assetTag: 'ASC' } }),
       jobs: await this.jobs.find({ order: { createdAt: 'DESC' }, take: 12 }),
       audit: await this.audit.find({ order: { createdAt: 'DESC' }, take: 12 }),
+      weather: await this.weather.getWeather(),
     };
   }
 

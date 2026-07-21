@@ -13,6 +13,7 @@ import { Member } from './entities/member.entity';
 import { RepertoireItem } from './entities/repertoire-item.entity';
 import { InitialSchema1760000000000 } from './migrations/1760000000000-initial-schema';
 import { QueueService } from './queue.service';
+import { WeatherService } from './weather.service';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { QueueService } from './queue.service';
     AppService,
     CoordinatorGuard,
     QueueService,
+    WeatherService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })

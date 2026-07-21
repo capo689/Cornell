@@ -8,6 +8,7 @@ The repository is public and uses only synthetic people, events, assignments, an
 
 - Angular 20 and Angular Material with responsive, keyboard-accessible coordinator and member experiences
 - NestJS REST API with validation, security headers, CORS, role enforcement, and health checks
+- Live Open-Meteo forecast data, normalized and cached server-side with a graceful unavailable state
 - MySQL 8 with TypeORM entities, relationships, transactions, and an audit trail
 - SQS-compatible background-job adapter for packet generation, notifications, and readiness calculation
 - Nginx reverse proxy and production Angular hosting
@@ -62,10 +63,13 @@ Nginx ──► Angular
 NestJS ──► MySQL / RDS
   │
   ├──────► SQS ──► worker contract
-  └──────► S3 document contract
+  ├──────► S3 document contract
+  └──────► Open-Meteo forecast API
 ```
 
 When `SQS_QUEUE_URL` is absent, the local adapter records and completes jobs in MySQL so the demo has no cloud prerequisite. When configured, the same service sends durable messages through the AWS SDK. The future AWS deployment separates the API and worker into ECS services and replaces local MySQL with RDS.
+
+Weather is fetched by the API for Schoellkopf Field rather than directly by the browser. The service normalizes the provider response, caches it for ten minutes, enforces a short timeout, and returns an explicit unavailable state when the upstream service cannot be reached.
 
 ## Security and accessibility notes
 

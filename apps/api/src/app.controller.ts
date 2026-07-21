@@ -17,15 +17,24 @@ import { AssignSubstituteDto } from './dto/assign-substitute.dto';
 import { ReorderRepertoireDto } from './dto/reorder-repertoire.dto';
 import { ReportDamageDto } from './dto/report-damage.dto';
 import { UpdateAvailabilityDto } from './dto/update-availability.dto';
+import { WeatherService } from './weather.service';
 
 @ApiTags('demo')
 @Controller('demo')
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly weatherService: WeatherService,
+  ) {}
 
   @Get('state')
   getState() {
     return this.appService.getState();
+  }
+
+  @Get('weather')
+  getWeather() {
+    return this.weatherService.getWeather();
   }
 
   @Post('resolve-absence')

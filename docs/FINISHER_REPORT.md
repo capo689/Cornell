@@ -4,7 +4,7 @@
 
 **Launch recommendation:** ready for a Level 0 local portfolio demonstration; do not launch publicly or use real data.
 
-Bandboard now has a coherent, testable golden path; real database persistence and migrations; server-owned business rules; input validation; role-boundary demonstration; rate limiting; audit and job visibility; responsive error/loading states; structured request logs; container builds; and a CI quality gate. The 82% readiness visualization is a real, centered SVG progress ring and the major navigation areas perform real API-backed actions.
+Bandboard now has a coherent, testable golden path; real database persistence and migrations; server-owned business rules; input validation; role-boundary demonstration; rate limiting; audit and job visibility; a live, server-cached weather integration; responsive error/loading states; structured request logs; container builds; and a CI quality gate. The 82% readiness visualization is a real, centered SVG progress ring and the major navigation areas perform real API-backed actions.
 
 Overall readiness is **86/100 for Level 0** and **45/100 for a public production service**. The difference is intentional: no real identity provider, cloud environment, centralized monitoring, backup/restore evidence, or operational ownership has been established.
 
@@ -28,7 +28,7 @@ No P0 blocks the explicitly scoped local synthetic-data demo. The first two rows
 | Layer | Level 0 score | Evidence and gap |
 |---|---:|---|
 | 1. Frontend foundations | 9/10 | Responsive coordinator/member UI, accessible labels/focus, disabled/loading/error states, API-backed sections; automated a11y scan remains |
-| 2. APIs and backend logic | 9/10 | DTO validation, Swagger, idempotent publish, transaction, server-owned readiness/qualification rules, negative tests |
+| 2. APIs and backend logic | 9/10 | DTO validation, Swagger, idempotent publish, transaction, server-owned readiness/qualification rules, cached Open-Meteo adapter, negative tests |
 | 3. Database and storage | 9/10 | MySQL source of truth, entities, checked-in migration, synchronization disabled, transactional assignment; no backup restore proof |
 | 4. Auth and permissions | 5/10 | Server guard rejects member mutation, but deliberately forgeable demo headers are not identity |
 | 5. Hosting and deployment | 7/10 | Nginx/API images and Compose verification; no hosted environment or TLS |
