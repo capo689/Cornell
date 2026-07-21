@@ -90,4 +90,4 @@ This repository is ready as a Level 0 local portfolio demo. It is not production
 
 ## Original visual asset
 
-`apps/web/public/assets/band-night-field.png` was generated specifically for this demo. It depicts a fictional ensemble and contains no university marks or logos.
+The event hero artwork in `apps/web/public/assets` was supplied specifically for this synthetic portfolio demo. It establishes the Big Red visual concept but does not imply university affiliation or endorsement.

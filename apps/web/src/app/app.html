@@ -3,18 +3,18 @@
 <div class="app-shell" [class.member-mode]="role() === 'member'">
   <aside class="sidebar" aria-label="Primary navigation">
     <div class="brand" aria-label="Bandboard home">
-      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-      <span>Bandboard</span>
+      <span class="brand-mark" aria-hidden="true">C</span>
+      <span class="brand-copy"><small>Cornell</small><strong>Big Red</strong><em>Marching Band</em></span>
     </div>
 
     @if (role() === 'coordinator') {
       <nav>
-        <p class="nav-label">Workspace</p>
+        <p class="nav-label">Command center</p>
         <button [class.active]="view() === 'command'" (click)="selectView('command')"><span>⌁</span> Command</button>
         <button [class.active]="view() === 'people'" (click)="selectView('people')"><span>◎</span> People</button>
         <button [class.active]="view() === 'repertoire'" (click)="selectView('repertoire')"><span>♫</span> Repertoire</button>
         <button [class.active]="view() === 'equipment'" (click)="selectView('equipment')"><span>◇</span> Equipment</button>
-        <p class="nav-label secondary">System</p>
+        <p class="nav-label secondary">Operations</p>
         <button [class.active]="view() === 'operations'" (click)="selectView('operations')"><span>◌</span> Operations <b>{{ jobs().length }}</b></button>
       </nav>
     } @else {
@@ -28,7 +28,7 @@
 
     <div class="sidebar-foot">
       <div class="avatar" aria-hidden="true">{{ role() === 'coordinator' ? 'MC' : 'JL' }}</div>
-      <div><strong>{{ role() === 'coordinator' ? 'Maya Chen' : 'Jordan Lee' }}</strong><small>{{ role() === 'coordinator' ? 'Demo coordinator' : 'Tenor sax · Member' }}</small></div>
+        <div><strong>{{ role() === 'coordinator' ? 'Maya Chen' : 'Jordan Lee' }}</strong><small>{{ role() === 'coordinator' ? 'Band coordinator' : 'Tenor sax · Member' }}</small></div>
     </div>
   </aside>
 
@@ -44,8 +44,8 @@
     }
 
     @if (role() === 'coordinator' && view() === 'command') {
-      <section class="page-heading">
-        <div><p class="kicker">Saturday · October 18</p><h1>Homecoming field show</h1><p>Schoellkopf Field · Call time 11:30 AM</p></div>
+      <section class="page-heading event-hero">
+        <div><p class="kicker">Saturday · October 18, 2025</p><h1>Homecoming<br />field show</h1><p><span aria-hidden="true">⌖</span> Schoellkopf Field, Ithaca, NY <i></i> <span aria-hidden="true">◷</span> Call time 11:30 AM</p></div>
         <div class="heading-actions"><button class="ghost" (click)="openModal('packet')">Preview packet</button><button class="primary" [disabled]="!absenceResolved() || published() || busy() !== null" (click)="publishRevision()">{{ busy() === 'publish' ? 'Publishing…' : published() ? 'Revision published' : 'Publish revision' }}</button></div>
       </section>
 
@@ -80,9 +80,15 @@
 
         <aside class="right-rail">
           <section class="panel schedule"><div class="panel-heading"><div><p class="kicker">Run of show</p><h2>Saturday</h2></div><button class="packet-link" (click)="openModal('packet')">Packet</button></div><ol><li><time>11:30</time><div><strong>Call time</strong><small>Fischell Band Center</small></div></li><li><time>12:10</time><div><strong>Music rehearsal</strong><small>Rehearsal room A</small></div></li><li><time>1:15</time><div><strong>March to stadium</strong><small>Form up at west entrance</small></div></li><li><time>2:05</time><div><strong>Pregame show</strong><small>Schoellkopf Field</small></div></li><li><time>3:35</time><div><strong>Halftime</strong><small>8:30 performance block</small></div></li></ol></section>
-          <section class="weather-card"><div><p class="kicker">Field conditions · Demo data</p><strong>54°</strong><span>Cloudy with light wind</span></div><footer><span>Rain <b>12%</b></span><span>Wind <b>8 mph</b></span></footer></section>
+          <section class="next-card"><p class="kicker">On deck</p><div><span class="next-icon" aria-hidden="true">♫</span><div><small>Next milestone</small><strong>Music rehearsal</strong><span>Starts at 12:10 PM · Room A</span></div></div><button class="packet-link" (click)="openModal('packet')">View packet →</button></section>
         </aside>
       </div>
+      <section class="command-summary" aria-label="Operational summary">
+        <article><div><span class="summary-icon" aria-hidden="true">◎</span><p class="kicker">Personnel snapshot</p></div><strong>{{ members().length }}</strong><span>Demo members</span><b>{{ members().length - 1 }} available</b><button (click)="selectView('people')">View people</button></article>
+        <article><div><span class="summary-icon" aria-hidden="true">◇</span><p class="kicker">Equipment status</p></div><strong>{{ instruments().length }}</strong><span>Assets tracked</span><b>96% ready</b><button (click)="selectView('equipment')">View equipment</button></article>
+        <article><div><span class="summary-icon" aria-hidden="true">◌</span><p class="kicker">Queue activity</p></div><strong>{{ jobs().length }}</strong><span>Jobs recorded</span><b>{{ published() ? 'Revision processed' : 'Waiting to publish' }}</b><button (click)="selectView('operations')">Open operations</button></article>
+        <article><div><span class="summary-icon" aria-hidden="true">↻</span><p class="kicker">Recent activity</p></div><strong>{{ audit().length }}</strong><span>Audit events</span><b>{{ audit().length ? 'Latest actions captured' : 'No changes yet' }}</b><button (click)="selectView('operations')">View audit trail</button></article>
+      </section>
     } @else if (role() === 'coordinator' && view() === 'people') {
       <section class="page-heading"><div><p class="kicker">Roster intelligence</p><h1>People</h1><p>Availability, assignments, and part qualifications in one operational view.</p></div><label class="search-box"><span>⌕</span><input type="search" placeholder="Search roster" [value]="search()" (input)="setSearch($event)" /></label></section>
       <section class="data-panel"><div class="stat-row"><div><strong>{{ members().length }}</strong><span>Demo members</span></div><div><strong>{{ substituteCandidates().length }}</strong><span>Qualified substitutes</span></div><div><strong>{{ members().length - 1 }}</strong><span>Available Saturday</span></div></div><div class="data-table people-table"><div class="table-head"><span>Member</span><span>Section</span><span>Travel</span><span>Status</span><span>Action</span></div>@for (member of filteredMembers(); track member.id) { <article><div class="person-cell"><span class="mini-avatar">{{ member.name.slice(0, 1) }}{{ member.name.split(' ')[1].slice(0, 1) }}</span><div><strong>{{ member.name }}</strong><small>{{ member.instrument }}</small></div></div><span>{{ member.section }}</span><span>{{ member.busAssignment || 'Unassigned' }}</span><span class="availability" [class.off]="!member.available"><i></i>{{ member.available ? member.status : 'unavailable' }}</span><button class="table-action" [disabled]="busy() !== null" (click)="toggleAvailability(member)">{{ busy() === 'member-' + member.id ? 'Saving…' : member.available ? 'Mark out' : 'Restore' }}</button></article> } @empty { <p class="empty-state">No members match “{{ search() }}”.</p> }</div></section>
