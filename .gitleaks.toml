@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Known fake NestJS scaffold badge token removed from the current tree"
+fingerprints = ["cfd7654862faa58ca32d9982276308e8f6ce1251:apps/api/README.md:generic-api-key:5"]
