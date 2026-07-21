@@ -25,7 +25,7 @@ docker compose up --build
 
 Open <http://localhost:8080>. MySQL is initialized automatically and the API seeds the single fictional Homecoming event on first use.
 
-The Compose environment enables TypeORM schema synchronization strictly for disposable local data. A hosted deployment should disable it and run reviewed migrations during release.
+The API runs the checked-in initial migration automatically and never uses TypeORM schema synchronization. The seeded database contains synthetic demo data only.
 
 Use **View as member** in the header to switch between the two demo perspectives. The backend—not just the interface—rejects coordinator mutations from the member role.
 
@@ -47,6 +47,8 @@ The Angular development server is at <http://localhost:4200> and proxies `/api` 
 3. Publish revision 4; inspect the job activity under Operations.
 4. Switch to the member view and acknowledge the changed assignment.
 5. Return to the coordinator view and observe the completed readiness state.
+
+The People, Repertoire, Equipment, and Operations sections are also functional: update availability, reorder charts, report instrument condition, and inspect queued work plus the audit trail. **Reset demo** restores the 82% opening state.
 
 ## Architecture
 
@@ -72,6 +74,19 @@ When `SQS_QUEUE_URL` is absent, the local adapter records and completes jobs in 
 - Uploaded-document functionality is represented architecturally but intentionally excluded from this thin demo until signed S3 URLs and file validation are implemented.
 - The interface includes a skip link, visible focus states, non-color status text, responsive layouts, semantic headings, live alerts, and a list-based experience rather than an inaccessible canvas.
 - Demo role headers illustrate the authorization boundary; a production deployment would validate OAuth/OIDC tokens and map claims to the same role guard.
+
+## Verification and handoff
+
+```bash
+npm run lint
+npm run build
+npm run test --workspace api -- --runInBand
+npm audit --audit-level=high
+```
+
+The full integration and browser test gate runs in GitHub Actions. Operational details and the production-readiness boundary are documented in [the runbook](docs/RUNBOOK.md), [architecture notes](docs/ARCHITECTURE.md), and [FINISHER report](docs/FINISHER_REPORT.md).
+
+This repository is ready as a Level 0 local portfolio demo. It is not production-ready: the role selector is deliberately not identity authentication, cloud deployment is not provisioned, and recovery/monitoring controls are not configured.
 
 ## Original visual asset
 

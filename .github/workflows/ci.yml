@@ -11,6 +11,27 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: bandboard
+          MYSQL_USER: bandboard
+          MYSQL_PASSWORD: bandboard
+          MYSQL_ROOT_PASSWORD: local-root-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -ubandboard -pbandboard"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=20
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: bandboard
+      DB_PASSWORD: bandboard
+      DB_NAME: bandboard
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,9 +39,20 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm run lint
       - run: npm run build
       - run: npm run test --workspace api -- --runInBand
+      - run: npm run test:e2e --workspace api -- --runInBand
+      - run: npm run test --workspace web -- --watch=false --browsers=ChromeHeadless
       - run: npm audit --audit-level=high
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
 
   containers:
     runs-on: ubuntu-latest

@@ -24,7 +24,6 @@ services:
       DB_USER: bandboard
       DB_PASSWORD: bandboard
       DB_NAME: bandboard
-      DB_SYNCHRONIZE: "true"
       WEB_ORIGIN: http://localhost:8080
     depends_on:
       mysql:
