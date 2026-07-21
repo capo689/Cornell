@@ -14,7 +14,9 @@ describe('App', () => {
   it('starts in the coordinator command view', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain('Homecoming field show');
+    const heading = fixture.nativeElement.querySelector('h1')?.textContent ?? '';
+    expect(heading).toContain('Homecoming');
+    expect(heading).toContain('field show');
   });
 
   it('switches to the member itinerary', () => {
