@@ -1,0 +1,219 @@
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<div class="app-shell" [class.member-mode]="role() === 'member'">
+  <aside class="sidebar" aria-label="Primary navigation">
+    <div class="brand" aria-label="Bandboard home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>Bandboard</span>
+    </div>
+
+    @if (role() === 'coordinator') {
+      <nav>
+        <p class="nav-label">Workspace</p>
+        <button [class.active]="view() === 'command'" (click)="selectView('command')">
+          <span aria-hidden="true">⌁</span> Command
+        </button>
+        <button [class.active]="view() === 'people'" (click)="selectView('people')">
+          <span aria-hidden="true">◎</span> People
+        </button>
+        <button [class.active]="view() === 'repertoire'" (click)="selectView('repertoire')">
+          <span aria-hidden="true">♫</span> Repertoire
+        </button>
+        <button [class.active]="view() === 'equipment'" (click)="selectView('equipment')">
+          <span aria-hidden="true">◇</span> Equipment
+        </button>
+        <p class="nav-label secondary">System</p>
+        <button [class.active]="view() === 'operations'" (click)="selectView('operations')">
+          <span aria-hidden="true">◌</span> Operations
+          <b>{{ jobs().length }}</b>
+        </button>
+      </nav>
+    } @else {
+      <nav>
+        <p class="nav-label">My band</p>
+        <button class="active"><span aria-hidden="true">⌁</span> This week</button>
+        <button><span aria-hidden="true">♫</span> My music</button>
+        <button><span aria-hidden="true">◇</span> My equipment</button>
+      </nav>
+    }
+
+    <div class="sidebar-foot">
+      <div class="avatar" aria-hidden="true">{{ role() === 'coordinator' ? 'MC' : 'JL' }}</div>
+      <div>
+        <strong>{{ role() === 'coordinator' ? 'Maya Chen' : 'Jordan Lee' }}</strong>
+        <small>{{ role() === 'coordinator' ? 'Band coordinator' : 'Tenor sax · Member' }}</small>
+      </div>
+      <button class="more" aria-label="Account menu">•••</button>
+    </div>
+  </aside>
+
+  <main id="main">
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">Demo workspace</span>
+        <span class="api-indicator" [class.connected]="apiConnected()" [attr.aria-label]="apiConnected() ? 'API connected' : 'Standalone demo mode'">{{ apiConnected() ? 'live' : 'local' }}</span>
+        <span class="divider">/</span>
+        <span>{{ role() === 'coordinator' ? 'Coordinator view' : 'Member view' }}</span>
+      </div>
+      <button class="role-switch" (click)="switchRole()">
+        <span class="switch-icon" aria-hidden="true">⇄</span>
+        View as {{ role() === 'coordinator' ? 'member' : 'coordinator' }}
+      </button>
+    </header>
+
+    @if (role() === 'coordinator' && view() === 'command') {
+      <section class="page-heading">
+        <div>
+          <p class="kicker">Saturday · October 18</p>
+          <h1>Homecoming field show</h1>
+          <p>Schoellkopf Field · Call time 11:30 AM</p>
+        </div>
+        <div class="heading-actions">
+          <button class="ghost">Preview packet</button>
+          <button class="primary" [disabled]="!absenceResolved() || published()" (click)="publishRevision()">
+            {{ published() ? 'Revision published' : 'Publish revision' }}
+          </button>
+        </div>
+      </section>
+
+      <section class="readiness-card" aria-labelledby="readiness-title">
+        <div class="score-ring" [style.--score]="readiness()">
+          <span>{{ readiness() }}</span><small>%</small>
+        </div>
+        <div class="readiness-copy">
+          <div class="title-line">
+            <h2 id="readiness-title">Event readiness</h2>
+            <span class="status" [class.ready]="readiness() === 100">
+              {{ readiness() === 100 ? 'Ready' : published() ? '1 acknowledgment pending' : absenceResolved() ? 'Ready to publish' : '3 items need attention' }}
+            </span>
+          </div>
+          <p>{{ published() ? 'Revision 4 is live. Waiting on member acknowledgments.' : absenceResolved() ? 'Coverage is restored. Publish revision 4 to notify affected members.' : 'Resolve coverage and travel conflicts before publishing revision 4.' }}</p>
+          <div class="readiness-bars" aria-label="Readiness by category">
+            <div><span><b>People</b><em>{{ absenceResolved() ? '100%' : '88%' }}</em></span><i [style.width]="absenceResolved() ? '100%' : '88%'"></i></div>
+            <div><span><b>Music</b><em>{{ absenceResolved() ? '100%' : '75%' }}</em></span><i [style.width]="absenceResolved() ? '100%' : '75%'"></i></div>
+            <div><span><b>Travel</b><em>{{ absenceResolved() ? '92%' : '84%' }}</em></span><i [style.width]="absenceResolved() ? '92%' : '84%'"></i></div>
+            <div><span><b>Gear</b><em>96%</em></span><i style="width:96%"></i></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="content-grid">
+        <section class="panel attention">
+          <div class="panel-heading">
+            <div><p class="kicker">Priority queue</p><h2>Needs attention</h2></div>
+            <span class="count">{{ issues() }}</span>
+          </div>
+
+          @if (!absenceResolved()) {
+            <article class="issue-card critical">
+              <div class="issue-icon" aria-hidden="true">!</div>
+              <div class="issue-copy">
+                <div class="issue-meta"><span class="pill danger">Coverage</span><time>10 min ago</time></div>
+                <h3>Tenor sax part is uncovered</h3>
+                <p>Jordan Lee reported unavailable. “Dancing in the Moonlight” needs reassignment.</p>
+                <div class="candidate">
+                  <span class="candidate-avatar">AR</span>
+                  <div><strong>Alex Rivera</strong><small>Best match · Available · Part qualified</small></div>
+                  <button (click)="resolveAbsence()">Assign</button>
+                </div>
+              </div>
+            </article>
+          } @else {
+            <article class="issue-card resolved">
+              <div class="issue-icon" aria-hidden="true">✓</div>
+              <div class="issue-copy">
+                <div class="issue-meta"><span class="pill success">Resolved</span><time>just now</time></div>
+                <h3>Tenor sax coverage restored</h3>
+                <p>Alex Rivera is assigned. Music, instrument, and itinerary are ready to publish.</p>
+              </div>
+            </article>
+          }
+
+          <article class="compact-issue"><span class="dot amber"></span><div><strong>3 changes unacknowledged</strong><small>Reminders send automatically at 6:00 PM</small></div><button aria-label="View acknowledgments">→</button></article>
+          @if (!absenceResolved()) {
+            <article class="compact-issue"><span class="dot red"></span><div><strong>Bus 2 is at capacity</strong><small>Assignment conflict affects one substitute</small></div><button aria-label="View transportation conflict">→</button></article>
+          }
+        </section>
+
+        <aside class="right-rail">
+          <section class="panel schedule">
+            <div class="panel-heading"><div><p class="kicker">Run of show</p><h2>Saturday</h2></div><button class="icon-button" aria-label="More schedule options">•••</button></div>
+            <ol>
+              <li class="done"><time>11:30</time><div><strong>Call time</strong><small>Fischell Band Center</small></div></li>
+              <li><time>12:10</time><div><strong>Music rehearsal</strong><small>Rehearsal room A</small></div></li>
+              <li><time>1:15</time><div><strong>March to stadium</strong><small>Form up at west entrance</small></div></li>
+              <li><time>2:05</time><div><strong>Pregame show</strong><small>Schoellkopf Field</small></div></li>
+              <li><time>3:35</time><div><strong>Halftime</strong><small>8:30 performance block</small></div></li>
+            </ol>
+          </section>
+
+          <section class="weather-card">
+            <div><p class="kicker">Field conditions</p><strong>54°</strong><span>Cloudy with light wind</span></div>
+            <div class="weather-mark" aria-hidden="true"><i></i><i></i><i></i></div>
+            <footer><span>Rain <b>12%</b></span><span>Wind <b>8 mph</b></span></footer>
+          </section>
+        </aside>
+      </div>
+    } @else if (role() === 'coordinator' && view() === 'operations') {
+      <section class="page-heading"><div><p class="kicker">System</p><h1>Operations</h1><p>Background work, integrations, and audit activity.</p></div><span class="live"><i></i> All systems operational</span></section>
+      <div class="ops-grid">
+        <section class="panel jobs">
+          <div class="panel-heading"><div><p class="kicker">Queue activity</p><h2>Recent jobs</h2></div><span class="count">{{ jobs().length }}</span></div>
+          @for (job of jobs(); track job.label) {
+            <article><span class="job-check" aria-hidden="true">✓</span><div><strong>{{ job.label }}</strong><small>{{ job.time }}</small></div><span class="pill success">{{ job.state }}</span></article>
+          }
+        </section>
+        <section class="panel architecture">
+          <p class="kicker">Service map</p><h2>Healthy by design</h2>
+          <div class="service-flow"><span>Angular</span><i>→</i><span>NestJS</span><i>→</i><span>MySQL</span></div>
+          <div class="service-flow offset"><span>SQS</span><i>→</i><span>Worker</span><i>→</i><span>S3</span></div>
+          <p>Last health check completed 24 seconds ago. No failed or dead-lettered jobs.</p>
+        </section>
+      </div>
+    } @else if (role() === 'coordinator') {
+      <section class="placeholder-page">
+        <div class="placeholder-art"><span>♫</span></div>
+        <p class="kicker">Demo boundary</p>
+        <h1>{{ view() | titlecase }}</h1>
+        <p>This module is represented in the event command workflow without expanding the demo into a full administrative suite.</p>
+        <button class="primary" (click)="selectView('command')">Return to command</button>
+      </section>
+    } @else {
+      <section class="member-hero">
+        <div class="member-hero-copy">
+          <p class="kicker">Your Saturday</p>
+          <h1>Homecoming field show</h1>
+          <p>Everything you need, from call time to the last note.</p>
+        </div>
+      </section>
+
+      <section class="member-wrap">
+        @if (published() && !acknowledged()) {
+          <article class="change-alert" role="alert">
+            <span aria-hidden="true">!</span>
+            <div><strong>Your assignment changed</strong><p>Revision 4 includes a new Bus 1 seat and updated tenor sax coverage.</p></div>
+            <button class="primary" (click)="acknowledge()">Review & acknowledge</button>
+          </article>
+        } @else if (acknowledged()) {
+          <article class="change-alert confirmed"><span aria-hidden="true">✓</span><div><strong>You’re all set</strong><p>Revision 4 acknowledged. The coordinator can see your confirmation.</p></div></article>
+        }
+
+        <div class="member-grid">
+          <section class="panel itinerary">
+            <div class="panel-heading"><div><p class="kicker">October 18</p><h2>My itinerary</h2></div><span class="pill success">On track</span></div>
+            <ol>
+              <li><time>11:30 AM</time><div><strong>Check in</strong><small>Fischell Band Center</small></div></li>
+              <li><time>12:10 PM</time><div><strong>Rehearsal</strong><small>Tenor sax · Room A</small></div></li>
+              <li><time>12:55 PM</time><div><strong>Board Bus 1</strong><small>Seat 18 · West entrance</small></div></li>
+              <li><time>2:05 PM</time><div><strong>Pregame show</strong><small>Schoellkopf Field</small></div></li>
+            </ol>
+          </section>
+          <div class="member-side">
+            <section class="assignment-card"><p class="kicker">Your assignment</p><span class="big-icon" aria-hidden="true">♫</span><h2>Tenor saxophone</h2><p>Part 2 · Instrument TS-014</p><button class="ghost">Open music packet</button></section>
+            <section class="packing-card"><p class="kicker">Bring with you</p><ul><li><span>✓</span> Full uniform</li><li><span>✓</span> Rain shell</li><li><span>✓</span> Music packet</li></ul></section>
+          </div>
+        </div>
+      </section>
+    }
+  </main>
+</div>
