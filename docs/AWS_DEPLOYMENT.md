@@ -30,10 +30,10 @@ For an operator-selected rollback, run the **Deploy Bandboard** workflow manuall
 ./scripts/aws-status.sh
 
 aws --profile bandboard-deploy --region us-east-1 \
-  logs tail /ecs/bandboard/api --since 30m
+  logs tail /bandboard/api --since 30m
 
 aws --profile bandboard-deploy --region us-east-1 \
-  logs tail /ecs/bandboard/worker --since 30m
+  logs tail /bandboard/worker --since 30m
 ```
 
 The full remote verification resets synthetic data, covers the missing part, publishes a revision, waits for all three asynchronous jobs, validates a signed private-S3 PDF, drives a controlled job through three failed deliveries into the DLQ, and successfully replays the same durable job.
