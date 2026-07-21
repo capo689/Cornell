@@ -17,6 +17,7 @@ import { Instrument } from './entities/instrument.entity';
 import { Job } from './entities/job.entity';
 import { Member } from './entities/member.entity';
 import { RepertoireItem } from './entities/repertoire-item.entity';
+import { PacketService } from './packet.service';
 import { QueueService } from './queue.service';
 import { WeatherService } from './weather.service';
 
@@ -33,6 +34,7 @@ export class AppService {
     @InjectRepository(Instrument)
     private readonly instruments: Repository<Instrument>,
     private readonly dataSource: DataSource,
+    private readonly packets: PacketService,
     private readonly queue: QueueService,
     private readonly weather: WeatherService,
   ) {}
@@ -50,6 +52,7 @@ export class AppService {
       instruments: await this.instruments.find({ order: { assetTag: 'ASC' } }),
       jobs: await this.jobs.find({ order: { createdAt: 'DESC' }, take: 12 }),
       audit: await this.audit.find({ order: { createdAt: 'DESC' }, take: 12 }),
+      packet: await this.packets.getStatus(event),
       weather: await this.weather.getWeather(),
     };
   }
@@ -211,7 +214,38 @@ export class AppService {
     return event;
   }
 
+  async getPacketDownload() {
+    return this.packets.getDownload(await this.ensureDemoData());
+  }
+
+  async retryJob(actor: string, jobId: string) {
+    const job = await this.queue.retry(jobId);
+    await this.audit.save({
+      actor,
+      action: 'RETRY_JOB',
+      detail: `Requeued ${job.type} job ${job.id}.`,
+    });
+    return job;
+  }
+
+  async startRecoveryDrill(actor: string) {
+    const event = await this.ensureDemoData();
+    const job = await this.queue.enqueue('RECALCULATE_READINESS', {
+      eventId: event.id,
+      simulateFailure: true,
+      drill: 'worker-recovery',
+    });
+    await this.audit.save({
+      actor,
+      action: 'START_RECOVERY_DRILL',
+      detail:
+        'Queued a controlled worker failure to exercise retries, dead-letter handling, and operator recovery.',
+    });
+    return job;
+  }
+
   async reset() {
+    await this.packets.clear();
     await this.dataSource.transaction(async (manager) => {
       await manager.getRepository(AuditEntry).clear();
       await manager.getRepository(Job).clear();

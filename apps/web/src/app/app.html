@@ -3,114 +3,821 @@
 <div class="app-shell" [class.member-mode]="role() === 'member'">
   <aside class="sidebar" aria-label="Primary navigation">
     <div class="brand" aria-label="Bandboard home">
-      <img class="brand-logo" src="/assets/big-red-logo-white.png" alt="Cornell Big Red Marching Band" />
+      <img
+        class="brand-logo"
+        src="/assets/big-red-logo-white.png"
+        alt="Cornell Big Red Marching Band"
+      />
     </div>
 
     @if (role() === 'coordinator') {
       <nav>
         <p class="nav-label">Command center</p>
-        <button [class.active]="view() === 'command'" (click)="selectView('command')"><span>⌁</span> Command</button>
-        <button [class.active]="view() === 'people'" (click)="selectView('people')"><span>◎</span> People</button>
-        <button [class.active]="view() === 'repertoire'" (click)="selectView('repertoire')"><span>♫</span> Repertoire</button>
-        <button [class.active]="view() === 'equipment'" (click)="selectView('equipment')"><span>◇</span> Equipment</button>
+        <button [class.active]="view() === 'command'" (click)="selectView('command')">
+          <span>⌁</span> Command
+        </button>
+        <button [class.active]="view() === 'people'" (click)="selectView('people')">
+          <span>◎</span> People
+        </button>
+        <button [class.active]="view() === 'repertoire'" (click)="selectView('repertoire')">
+          <span>♫</span> Repertoire
+        </button>
+        <button [class.active]="view() === 'equipment'" (click)="selectView('equipment')">
+          <span>◇</span> Equipment
+        </button>
         <p class="nav-label secondary">Operations</p>
-        <button [class.active]="view() === 'operations'" (click)="selectView('operations')"><span>◌</span> Operations <b>{{ jobs().length }}</b></button>
+        <button [class.active]="view() === 'operations'" (click)="selectView('operations')">
+          <span>◌</span> Operations <b>{{ jobs().length }}</b>
+        </button>
       </nav>
     } @else {
       <nav>
         <p class="nav-label">My band</p>
-        <button [class.active]="memberView() === 'week'" (click)="selectMemberView('week')"><span>⌁</span> This week</button>
-        <button [class.active]="memberView() === 'music'" (click)="selectMemberView('music')"><span>♫</span> My music</button>
-        <button [class.active]="memberView() === 'equipment'" (click)="selectMemberView('equipment')"><span>◇</span> My equipment</button>
+        <button [class.active]="memberView() === 'week'" (click)="selectMemberView('week')">
+          <span>⌁</span> This week
+        </button>
+        <button [class.active]="memberView() === 'music'" (click)="selectMemberView('music')">
+          <span>♫</span> My music
+        </button>
+        <button
+          [class.active]="memberView() === 'equipment'"
+          (click)="selectMemberView('equipment')"
+        >
+          <span>◇</span> My equipment
+        </button>
       </nav>
     }
 
     <div class="sidebar-foot">
       <div class="avatar" aria-hidden="true">{{ role() === 'coordinator' ? 'MC' : 'JL' }}</div>
-        <div><strong>{{ role() === 'coordinator' ? 'Maya Chen' : 'Jordan Lee' }}</strong><small>{{ role() === 'coordinator' ? 'Band coordinator' : 'Tenor sax · Member' }}</small></div>
+      <div>
+        <strong>{{ role() === 'coordinator' ? 'Maya Chen' : 'Jordan Lee' }}</strong
+        ><small>{{ role() === 'coordinator' ? 'Band coordinator' : 'Tenor sax · Member' }}</small>
+      </div>
     </div>
   </aside>
 
   <main id="main" [attr.aria-busy]="loading() || busy() !== null">
     <header class="topbar">
-      <div><span class="eyebrow">Synthetic demo workspace</span><span class="api-indicator" [class.connected]="apiConnected()">{{ apiConnected() ? 'API live' : 'offline' }}</span><span class="divider">/</span><span>{{ role() === 'coordinator' ? 'Coordinator view' : 'Member view' }}</span></div>
-      <button class="role-switch" (click)="switchRole()"><span class="switch-icon">⇄</span> View as {{ role() === 'coordinator' ? 'member' : 'coordinator' }}</button>
+      <div>
+        <span class="eyebrow">Synthetic demo workspace</span
+        ><span class="api-indicator" [class.connected]="apiConnected()">{{
+          apiConnected() ? 'API live' : 'offline'
+        }}</span
+        ><span class="divider">/</span
+        ><span>{{ role() === 'coordinator' ? 'Coordinator view' : 'Member view' }}</span>
+      </div>
+      <button class="role-switch" (click)="switchRole()">
+        <span class="switch-icon">⇄</span> View as
+        {{ role() === 'coordinator' ? 'member' : 'coordinator' }}
+      </button>
     </header>
 
-    @if (loading()) { <mat-progress-bar mode="indeterminate" aria-label="Loading Bandboard"></mat-progress-bar> }
+    @if (loading()) {
+      <mat-progress-bar mode="indeterminate" aria-label="Loading Bandboard"></mat-progress-bar>
+    }
     @if (errorMessage()) {
-      <div class="error-banner" role="alert"><span>!</span><p>{{ errorMessage() }}</p><button (click)="ngOnInit()">Retry</button></div>
+      <div class="error-banner" role="alert">
+        <span>!</span>
+        <p>{{ errorMessage() }}</p>
+        <button (click)="ngOnInit()">Retry</button>
+      </div>
     }
 
     @if (role() === 'coordinator' && view() === 'command') {
       <section class="page-heading event-hero">
-        <div><p class="kicker">Saturday · October 18, 2025</p><h1>Homecoming<br />field show</h1><p><span aria-hidden="true">⌖</span> Schoellkopf Field, Ithaca, NY <i></i> <span aria-hidden="true">◷</span> Call time 11:30 AM</p></div>
-        <div class="heading-actions"><button class="ghost" (click)="openModal('packet')">Preview packet</button><button class="primary" [disabled]="!absenceResolved() || published() || busy() !== null" (click)="publishRevision()">{{ busy() === 'publish' ? 'Publishing…' : published() ? 'Revision published' : 'Publish revision' }}</button></div>
+        <div>
+          <p class="kicker">Saturday · October 18, 2025</p>
+          <h1>Homecoming<br />field show</h1>
+          <p>
+            <span aria-hidden="true">⌖</span> Schoellkopf Field, Ithaca, NY <i></i>
+            <span aria-hidden="true">◷</span> Call time 11:30 AM
+          </p>
+        </div>
+        <div class="heading-actions">
+          <button class="ghost" (click)="openModal('packet')">Preview packet</button
+          ><button
+            class="primary"
+            [disabled]="!absenceResolved() || published() || busy() !== null"
+            (click)="publishRevision()"
+          >
+            {{
+              busy() === 'publish'
+                ? 'Publishing…'
+                : published()
+                  ? 'Revision published'
+                  : 'Publish revision'
+            }}
+          </button>
+        </div>
       </section>
 
       <section class="readiness-card" aria-labelledby="readiness-title">
-        <div class="score-ring" role="img" [attr.aria-label]="readiness() + ' percent event readiness'">
-          <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="score-track" cx="60" cy="60" r="52" pathLength="100"></circle><circle class="score-progress" cx="60" cy="60" r="52" pathLength="100" [attr.stroke-dasharray]="readiness() + ' 100'"></circle></svg>
-          <div class="score-value"><span>{{ readiness() }}</span><small>%</small></div>
+        <div
+          class="score-ring"
+          role="img"
+          [attr.aria-label]="readiness() + ' percent event readiness'"
+        >
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="score-track" cx="60" cy="60" r="52" pathLength="100"></circle>
+            <circle
+              class="score-progress"
+              cx="60"
+              cy="60"
+              r="52"
+              pathLength="100"
+              [attr.stroke-dasharray]="readiness() + ' 100'"
+            ></circle>
+          </svg>
+          <div class="score-value">
+            <span>{{ readiness() }}</span
+            ><small>%</small>
+          </div>
         </div>
         <div class="readiness-copy">
-          <div class="title-line"><h2 id="readiness-title">Event readiness</h2><span class="status" [class.ready]="readiness() === 100">{{ readiness() === 100 ? 'Ready' : published() ? '1 acknowledgment pending' : absenceResolved() ? 'Ready to publish' : '3 items need attention' }}</span></div>
-          <p>{{ published() ? 'Revision 4 is live. Waiting on member acknowledgment.' : absenceResolved() ? 'Coverage is restored. Publish revision 4 to notify affected members.' : 'Resolve coverage and travel conflicts before publishing revision 4.' }}</p>
+          <div class="title-line">
+            <h2 id="readiness-title">Event readiness</h2>
+            <span class="status" [class.ready]="readiness() === 100">{{
+              readiness() === 100
+                ? 'Ready'
+                : published()
+                  ? '1 acknowledgment pending'
+                  : absenceResolved()
+                    ? 'Ready to publish'
+                    : '3 items need attention'
+            }}</span>
+          </div>
+          <p>
+            {{
+              published()
+                ? 'Revision 4 is live. Waiting on member acknowledgment.'
+                : absenceResolved()
+                  ? 'Coverage is restored. Publish revision 4 to notify affected members.'
+                  : 'Resolve coverage and travel conflicts before publishing revision 4.'
+            }}
+          </p>
           <div class="readiness-bars" aria-label="Readiness by category">
-            <div><span><b>People</b><em>{{ absenceResolved() ? '100%' : '88%' }}</em></span><i [style.width]="absenceResolved() ? '100%' : '88%'"></i></div>
-            <div><span><b>Music</b><em>{{ absenceResolved() ? '100%' : '75%' }}</em></span><i [style.width]="absenceResolved() ? '100%' : '75%'"></i></div>
-            <div><span><b>Travel</b><em>{{ absenceResolved() ? '92%' : '84%' }}</em></span><i [style.width]="absenceResolved() ? '92%' : '84%'"></i></div>
-            <div><span><b>Gear</b><em>96%</em></span><i style="width:96%"></i></div>
+            <div>
+              <span
+                ><b>People</b><em>{{ absenceResolved() ? '100%' : '88%' }}</em></span
+              ><i [style.width]="absenceResolved() ? '100%' : '88%'"></i>
+            </div>
+            <div>
+              <span
+                ><b>Music</b><em>{{ absenceResolved() ? '100%' : '75%' }}</em></span
+              ><i [style.width]="absenceResolved() ? '100%' : '75%'"></i>
+            </div>
+            <div>
+              <span
+                ><b>Travel</b><em>{{ absenceResolved() ? '92%' : '84%' }}</em></span
+              ><i [style.width]="absenceResolved() ? '92%' : '84%'"></i>
+            </div>
+            <div>
+              <span><b>Gear</b><em>96%</em></span
+              ><i style="width: 96%"></i>
+            </div>
           </div>
         </div>
       </section>
 
       <div class="content-grid">
         <section class="panel attention">
-          <div class="panel-heading"><div><p class="kicker">Priority queue</p><h2>Needs attention</h2></div><span class="count">{{ issues() }}</span></div>
+          <div class="panel-heading">
+            <div>
+              <p class="kicker">Priority queue</p>
+              <h2>Needs attention</h2>
+            </div>
+            <span class="count">{{ issues() }}</span>
+          </div>
           @if (!absenceResolved()) {
-            <article class="issue-card critical"><div class="issue-icon">!</div><div class="issue-copy"><div class="issue-meta"><span class="pill danger">Coverage</span><time>10 min ago</time></div><h3>Tenor sax part is uncovered</h3><p>Jordan Lee reported unavailable. “Dancing in the Moonlight” needs reassignment.</p><div class="candidate"><span class="candidate-avatar">AR</span><div><strong>Alex Rivera</strong><small>Best match · Available · Part qualified</small></div><button [disabled]="busy() !== null" (click)="openModal('substitute')">Assign</button></div></div></article>
+            <article class="issue-card critical">
+              <div class="issue-icon">!</div>
+              <div class="issue-copy">
+                <div class="issue-meta">
+                  <span class="pill danger">Coverage</span><time>10 min ago</time>
+                </div>
+                <h3>Tenor sax part is uncovered</h3>
+                <p>
+                  Jordan Lee reported unavailable. “Dancing in the Moonlight” needs reassignment.
+                </p>
+                <div class="candidate">
+                  <span class="candidate-avatar">AR</span>
+                  <div>
+                    <strong>Alex Rivera</strong
+                    ><small>Best match · Available · Part qualified</small>
+                  </div>
+                  <button [disabled]="busy() !== null" (click)="openModal('substitute')">
+                    Assign
+                  </button>
+                </div>
+              </div>
+            </article>
           } @else {
-            <article class="issue-card resolved"><div class="issue-icon">✓</div><div class="issue-copy"><div class="issue-meta"><span class="pill success">Resolved</span><time>saved</time></div><h3>Tenor sax coverage restored</h3><p>Music, instrument, itinerary, and Bus 1 seat are ready to publish.</p></div></article>
+            <article class="issue-card resolved">
+              <div class="issue-icon">✓</div>
+              <div class="issue-copy">
+                <div class="issue-meta">
+                  <span class="pill success">Resolved</span><time>saved</time>
+                </div>
+                <h3>Tenor sax coverage restored</h3>
+                <p>Music, instrument, itinerary, and Bus 1 seat are ready to publish.</p>
+              </div>
+            </article>
           }
-          <article class="compact-issue"><span class="dot amber"></span><div><strong>{{ acknowledged() ? 'Revision acknowledged' : '3 changes unacknowledged' }}</strong><small>{{ published() ? 'Member response is visible to the coordinator' : 'Reminders begin after publication' }}</small></div><button aria-label="View acknowledgments" (click)="openModal('acknowledgments')">→</button></article>
-          @if (!absenceResolved()) { <article class="compact-issue"><span class="dot red"></span><div><strong>Bus 2 is at capacity</strong><small>Assigning the qualified substitute also resolves travel</small></div><button aria-label="Resolve transportation conflict" (click)="openModal('substitute')">→</button></article> }
+          <article class="compact-issue">
+            <span class="dot amber"></span>
+            <div>
+              <strong>{{
+                acknowledged() ? 'Revision acknowledged' : '3 changes unacknowledged'
+              }}</strong
+              ><small>{{
+                published()
+                  ? 'Member response is visible to the coordinator'
+                  : 'Reminders begin after publication'
+              }}</small>
+            </div>
+            <button aria-label="View acknowledgments" (click)="openModal('acknowledgments')">
+              →
+            </button>
+          </article>
+          @if (!absenceResolved()) {
+            <article class="compact-issue">
+              <span class="dot red"></span>
+              <div>
+                <strong>Bus 2 is at capacity</strong
+                ><small>Assigning the qualified substitute also resolves travel</small>
+              </div>
+              <button
+                aria-label="Resolve transportation conflict"
+                (click)="openModal('substitute')"
+              >
+                →
+              </button>
+            </article>
+          }
         </section>
 
-        <section class="panel schedule"><div class="panel-heading"><div><p class="kicker">Run of show</p><h2>Saturday</h2></div><button class="packet-link" (click)="openModal('packet')">Packet</button></div><ol><li><time>11:30</time><div><strong>Call time</strong><small>Fischell Band Center</small></div></li><li><time>12:10</time><div><strong>Music rehearsal</strong><small>Rehearsal room A</small></div></li><li><time>1:15</time><div><strong>March to stadium</strong><small>Form up at west entrance</small></div></li><li><time>2:05</time><div><strong>Pregame show</strong><small>Schoellkopf Field</small></div></li><li><time>3:35</time><div><strong>Halftime</strong><small>8:30 performance block</small></div></li></ol></section>
+        <section class="panel schedule">
+          <div class="panel-heading">
+            <div>
+              <p class="kicker">Run of show</p>
+              <h2>Saturday</h2>
+            </div>
+            <button class="packet-link" (click)="openModal('packet')">Packet</button>
+          </div>
+          <ol>
+            <li>
+              <time>11:30</time>
+              <div><strong>Call time</strong><small>Fischell Band Center</small></div>
+            </li>
+            <li>
+              <time>12:10</time>
+              <div><strong>Music rehearsal</strong><small>Rehearsal room A</small></div>
+            </li>
+            <li>
+              <time>1:15</time>
+              <div><strong>March to stadium</strong><small>Form up at west entrance</small></div>
+            </li>
+            <li>
+              <time>2:05</time>
+              <div><strong>Pregame show</strong><small>Schoellkopf Field</small></div>
+            </li>
+            <li>
+              <time>3:35</time>
+              <div><strong>Halftime</strong><small>8:30 performance block</small></div>
+            </li>
+          </ol>
+        </section>
         <aside class="conditions-rail">
-          <section class="weather-card" aria-labelledby="coordinator-weather-title"><div class="weather-copy"><div class="weather-label"><p class="kicker" id="coordinator-weather-title">Field conditions</p><span class="weather-live" [class.offline]="!weather().live"><i></i>{{ weather().live ? 'Live API' : 'Unavailable' }}</span></div><strong>{{ weather().temperatureF === null ? '—' : weather().temperatureF + '°' }}</strong><span>{{ weather().condition }}</span><small>{{ weather().location }} · Feels like {{ weather().apparentTemperatureF === null ? '—' : weather().apparentTemperatureF + '°' }}</small></div><footer><span>Rain <b>{{ weather().precipitationProbability === null ? '—' : weather().precipitationProbability + '%' }}</b></span><span>Wind <b>{{ weather().windMph === null ? '—' : weather().windMph + ' mph' }}</b></span><span>Gusts <b>{{ weather().windGustMph === null ? '—' : weather().windGustMph + ' mph' }}</b></span></footer><p class="weather-source">Updated {{ weather().fetchedAt | date:'shortTime' }} · {{ weather().source }}</p></section>
-          <section class="next-card"><div><p class="kicker">On deck</p><small>Next milestone</small><strong>Music rehearsal</strong><span>Starts at 12:10 PM · Room A</span></div><button class="packet-link" (click)="openModal('packet')">View packet →</button></section>
+          <section class="weather-card" aria-labelledby="coordinator-weather-title">
+            <div class="weather-copy">
+              <div class="weather-label">
+                <p class="kicker" id="coordinator-weather-title">Field conditions</p>
+                <span class="weather-live" [class.offline]="!weather().live"
+                  ><i></i>{{ weather().live ? 'Live API' : 'Unavailable' }}</span
+                >
+              </div>
+              <strong>{{
+                weather().temperatureF === null ? '—' : weather().temperatureF + '°'
+              }}</strong
+              ><span>{{ weather().condition }}</span
+              ><small
+                >{{ weather().location }} · Feels like
+                {{
+                  weather().apparentTemperatureF === null
+                    ? '—'
+                    : weather().apparentTemperatureF + '°'
+                }}</small
+              >
+            </div>
+            <footer>
+              <span
+                >Rain
+                <b>{{
+                  weather().precipitationProbability === null
+                    ? '—'
+                    : weather().precipitationProbability + '%'
+                }}</b></span
+              ><span
+                >Wind
+                <b>{{ weather().windMph === null ? '—' : weather().windMph + ' mph' }}</b></span
+              ><span
+                >Gusts
+                <b>{{
+                  weather().windGustMph === null ? '—' : weather().windGustMph + ' mph'
+                }}</b></span
+              >
+            </footer>
+            <p class="weather-source">
+              Updated {{ weather().fetchedAt | date: 'shortTime' }} · {{ weather().source }}
+            </p>
+          </section>
+          <section class="next-card">
+            <div>
+              <p class="kicker">On deck</p>
+              <small>Next milestone</small><strong>Music rehearsal</strong
+              ><span>Starts at 12:10 PM · Room A</span>
+            </div>
+            <button class="packet-link" (click)="openModal('packet')">View packet →</button>
+          </section>
         </aside>
       </div>
       <section class="command-summary" aria-label="Operational summary">
-        <article><div><span class="summary-icon" aria-hidden="true">◎</span><p class="kicker">Personnel snapshot</p></div><strong>{{ members().length }}</strong><span>Demo members</span><b>{{ members().length - 1 }} available</b><button (click)="selectView('people')">View people</button></article>
-        <article><div><span class="summary-icon" aria-hidden="true">◇</span><p class="kicker">Equipment status</p></div><strong>{{ instruments().length }}</strong><span>Assets tracked</span><b>96% ready</b><button (click)="selectView('equipment')">View equipment</button></article>
-        <article><div><span class="summary-icon" aria-hidden="true">◌</span><p class="kicker">Queue activity</p></div><strong>{{ jobs().length }}</strong><span>Jobs recorded</span><b>{{ published() ? 'Revision processed' : 'Waiting to publish' }}</b><button (click)="selectView('operations')">Open operations</button></article>
-        <article><div><span class="summary-icon" aria-hidden="true">↻</span><p class="kicker">Recent activity</p></div><strong>{{ audit().length }}</strong><span>Audit events</span><b>{{ audit().length ? 'Latest actions captured' : 'No changes yet' }}</b><button (click)="selectView('operations')">View audit trail</button></article>
+        <article>
+          <div>
+            <span class="summary-icon" aria-hidden="true">◎</span>
+            <p class="kicker">Personnel snapshot</p>
+          </div>
+          <strong>{{ members().length }}</strong
+          ><span>Demo members</span><b>{{ members().length - 1 }} available</b
+          ><button (click)="selectView('people')">View people</button>
+        </article>
+        <article>
+          <div>
+            <span class="summary-icon" aria-hidden="true">◇</span>
+            <p class="kicker">Equipment status</p>
+          </div>
+          <strong>{{ instruments().length }}</strong
+          ><span>Assets tracked</span><b>96% ready</b
+          ><button (click)="selectView('equipment')">View equipment</button>
+        </article>
+        <article>
+          <div>
+            <span class="summary-icon" aria-hidden="true">◌</span>
+            <p class="kicker">Queue activity</p>
+          </div>
+          <strong>{{ jobs().length }}</strong
+          ><span>Jobs recorded</span
+          ><b>{{ published() ? 'Revision processed' : 'Waiting to publish' }}</b
+          ><button (click)="selectView('operations')">Open operations</button>
+        </article>
+        <article>
+          <div>
+            <span class="summary-icon" aria-hidden="true">↻</span>
+            <p class="kicker">Recent activity</p>
+          </div>
+          <strong>{{ audit().length }}</strong
+          ><span>Audit events</span
+          ><b>{{ audit().length ? 'Latest actions captured' : 'No changes yet' }}</b
+          ><button (click)="selectView('operations')">View audit trail</button>
+        </article>
       </section>
     } @else if (role() === 'coordinator' && view() === 'people') {
-      <section class="page-heading"><div><p class="kicker">Roster intelligence</p><h1>People</h1><p>Availability, assignments, and part qualifications in one operational view.</p></div><label class="search-box"><span>⌕</span><input type="search" placeholder="Search roster" [value]="search()" (input)="setSearch($event)" /></label></section>
-      <section class="data-panel"><div class="stat-row"><div><strong>{{ members().length }}</strong><span>Demo members</span></div><div><strong>{{ substituteCandidates().length }}</strong><span>Qualified substitutes</span></div><div><strong>{{ members().length - 1 }}</strong><span>Available Saturday</span></div></div><div class="data-table people-table"><div class="table-head"><span>Member</span><span>Section</span><span>Travel</span><span>Status</span><span>Action</span></div>@for (member of filteredMembers(); track member.id) { <article><div class="person-cell"><span class="mini-avatar">{{ member.name.slice(0, 1) }}{{ member.name.split(' ')[1].slice(0, 1) }}</span><div><strong>{{ member.name }}</strong><small>{{ member.instrument }}</small></div></div><span>{{ member.section }}</span><span>{{ member.busAssignment || 'Unassigned' }}</span><span class="availability" [class.off]="!member.available"><i></i>{{ member.available ? member.status : 'unavailable' }}</span><button class="table-action" [disabled]="busy() !== null" (click)="toggleAvailability(member)">{{ busy() === 'member-' + member.id ? 'Saving…' : member.available ? 'Mark out' : 'Restore' }}</button></article> } @empty { <p class="empty-state">No members match “{{ search() }}”.</p> }</div></section>
+      <section class="page-heading">
+        <div>
+          <p class="kicker">Roster intelligence</p>
+          <h1>People</h1>
+          <p>Availability, assignments, and part qualifications in one operational view.</p>
+        </div>
+        <label class="search-box"
+          ><span>⌕</span
+          ><input
+            type="search"
+            placeholder="Search roster"
+            [value]="search()"
+            (input)="setSearch($event)"
+        /></label>
+      </section>
+      <section class="data-panel">
+        <div class="stat-row">
+          <div>
+            <strong>{{ members().length }}</strong
+            ><span>Demo members</span>
+          </div>
+          <div>
+            <strong>{{ substituteCandidates().length }}</strong
+            ><span>Qualified substitutes</span>
+          </div>
+          <div>
+            <strong>{{ members().length - 1 }}</strong
+            ><span>Available Saturday</span>
+          </div>
+        </div>
+        <div class="data-table people-table">
+          <div class="table-head">
+            <span>Member</span><span>Section</span><span>Travel</span><span>Status</span
+            ><span>Action</span>
+          </div>
+          @for (member of filteredMembers(); track member.id) {
+            <article>
+              <div class="person-cell">
+                <span class="mini-avatar"
+                  >{{ member.name.slice(0, 1) }}{{ member.name.split(' ')[1].slice(0, 1) }}</span
+                >
+                <div>
+                  <strong>{{ member.name }}</strong
+                  ><small>{{ member.instrument }}</small>
+                </div>
+              </div>
+              <span>{{ member.section }}</span
+              ><span>{{ member.busAssignment || 'Unassigned' }}</span
+              ><span class="availability" [class.off]="!member.available"
+                ><i></i>{{ member.available ? member.status : 'unavailable' }}</span
+              ><button
+                class="table-action"
+                [disabled]="busy() !== null"
+                (click)="toggleAvailability(member)"
+              >
+                {{
+                  busy() === 'member-' + member.id
+                    ? 'Saving…'
+                    : member.available
+                      ? 'Mark out'
+                      : 'Restore'
+                }}
+              </button>
+            </article>
+          } @empty {
+            <p class="empty-state">No members match “{{ search() }}”.</p>
+          }
+        </div>
+      </section>
     } @else if (role() === 'coordinator' && view() === 'repertoire') {
-      <section class="page-heading"><div><p class="kicker">Show flow</p><h1>Repertoire</h1><p>Coverage and running order for the Homecoming field show.</p></div><button class="ghost" (click)="openModal('packet')">Preview music packet</button></section>
-      <section class="data-panel repertoire-panel"><div class="section-intro"><div><span class="set-badge">SET 04</span><div><strong>Homecoming field show</strong><small>{{ repertoire().length }} charts · 13:01 total · revision {{ published() ? '4' : '3' }}</small></div></div><span class="pill" [class.success]="absenceResolved()" [class.danger]="!absenceResolved()">{{ absenceResolved() ? 'Fully covered' : '1 part missing' }}</span></div><div class="music-list">@for (item of repertoire(); track item.id; let first = $first; let last = $last) { <article><span class="track-number">{{ item.position.toString().padStart(2, '0') }}</span><div><strong>{{ item.title }}</strong><small>{{ item.artist }} · {{ item.duration }}</small></div><span class="coverage" [class.missing]="item.missingParts > 0">{{ item.missingParts ? item.missingParts + ' part missing' : 'Coverage ready' }}</span><div class="order-actions"><button aria-label="Move up" [disabled]="first || busy() !== null" (click)="moveRepertoire(item, -1)">↑</button><button aria-label="Move down" [disabled]="last || busy() !== null" (click)="moveRepertoire(item, 1)">↓</button></div></article> }</div></section>
+      <section class="page-heading">
+        <div>
+          <p class="kicker">Show flow</p>
+          <h1>Repertoire</h1>
+          <p>Coverage and running order for the Homecoming field show.</p>
+        </div>
+        <button class="ghost" (click)="openModal('packet')">Preview music packet</button>
+      </section>
+      <section class="data-panel repertoire-panel">
+        <div class="section-intro">
+          <div>
+            <span class="set-badge">SET 04</span>
+            <div>
+              <strong>Homecoming field show</strong
+              ><small
+                >{{ repertoire().length }} charts · 13:01 total · revision
+                {{ published() ? '4' : '3' }}</small
+              >
+            </div>
+          </div>
+          <span
+            class="pill"
+            [class.success]="absenceResolved()"
+            [class.danger]="!absenceResolved()"
+            >{{ absenceResolved() ? 'Fully covered' : '1 part missing' }}</span
+          >
+        </div>
+        <div class="music-list">
+          @for (item of repertoire(); track item.id; let first = $first; let last = $last) {
+            <article>
+              <span class="track-number">{{ item.position.toString().padStart(2, '0') }}</span>
+              <div>
+                <strong>{{ item.title }}</strong
+                ><small>{{ item.artist }} · {{ item.duration }}</small>
+              </div>
+              <span class="coverage" [class.missing]="item.missingParts > 0">{{
+                item.missingParts ? item.missingParts + ' part missing' : 'Coverage ready'
+              }}</span>
+              <div class="order-actions">
+                <button
+                  aria-label="Move up"
+                  [disabled]="first || busy() !== null"
+                  (click)="moveRepertoire(item, -1)"
+                >
+                  ↑</button
+                ><button
+                  aria-label="Move down"
+                  [disabled]="last || busy() !== null"
+                  (click)="moveRepertoire(item, 1)"
+                >
+                  ↓
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
     } @else if (role() === 'coordinator' && view() === 'equipment') {
-      <section class="page-heading"><div><p class="kicker">Asset readiness</p><h1>Equipment</h1><p>Assignments and condition reports for Saturday’s deployment.</p></div><span class="live"><i></i>{{ instruments().length }} assets tracked</span></section>
-      <section class="equipment-grid">@for (instrument of instruments(); track instrument.id) { <article class="equipment-card"><div class="asset-icon">{{ instrument.type.includes('sax') ? '♫' : instrument.type.includes('flag') ? '⚑' : '◇' }}</div><div class="asset-title"><span>{{ instrument.assetTag }}</span><h2>{{ instrument.type }}</h2></div><dl><div><dt>Assigned to</dt><dd>{{ instrument.assignee || 'Available pool' }}</dd></div><div><dt>Deployment</dt><dd>{{ instrument.status }}</dd></div></dl>@if (instrument.note) { <p class="asset-note">{{ instrument.note }}</p> }<footer><span class="condition" [class.attention]="instrument.condition === 'attention'" [class.repair]="instrument.condition === 'repair'"><i></i>{{ instrument.condition }}</span><button [disabled]="busy() !== null" (click)="cycleCondition(instrument)">{{ busy() === 'gear-' + instrument.id ? 'Saving…' : 'Update condition' }}</button></footer></article> }</section>
+      <section class="page-heading">
+        <div>
+          <p class="kicker">Asset readiness</p>
+          <h1>Equipment</h1>
+          <p>Assignments and condition reports for Saturday’s deployment.</p>
+        </div>
+        <span class="live"><i></i>{{ instruments().length }} assets tracked</span>
+      </section>
+      <section class="equipment-grid">
+        @for (instrument of instruments(); track instrument.id) {
+          <article class="equipment-card">
+            <div class="asset-icon">
+              {{
+                instrument.type.includes('sax') ? '♫' : instrument.type.includes('flag') ? '⚑' : '◇'
+              }}
+            </div>
+            <div class="asset-title">
+              <span>{{ instrument.assetTag }}</span>
+              <h2>{{ instrument.type }}</h2>
+            </div>
+            <dl>
+              <div>
+                <dt>Assigned to</dt>
+                <dd>{{ instrument.assignee || 'Available pool' }}</dd>
+              </div>
+              <div>
+                <dt>Deployment</dt>
+                <dd>{{ instrument.status }}</dd>
+              </div>
+            </dl>
+            @if (instrument.note) {
+              <p class="asset-note">{{ instrument.note }}</p>
+            }
+            <footer>
+              <span
+                class="condition"
+                [class.attention]="instrument.condition === 'attention'"
+                [class.repair]="instrument.condition === 'repair'"
+                ><i></i>{{ instrument.condition }}</span
+              ><button [disabled]="busy() !== null" (click)="cycleCondition(instrument)">
+                {{ busy() === 'gear-' + instrument.id ? 'Saving…' : 'Update condition' }}
+              </button>
+            </footer>
+          </article>
+        }
+      </section>
     } @else if (role() === 'coordinator' && view() === 'operations') {
-      <section class="page-heading"><div><p class="kicker">System</p><h1>Operations</h1><p>Queued work and an immutable demo activity trail.</p></div><div class="heading-actions"><a class="ghost link-button" href="/api/docs" target="_blank" rel="noreferrer">API docs</a><button class="ghost" [disabled]="busy() !== null" (click)="resetDemo()">{{ busy() === 'reset' ? 'Resetting…' : 'Reset demo' }}</button></div></section>
-      <div class="ops-grid"><section class="panel jobs"><div class="panel-heading"><div><p class="kicker">Queue activity</p><h2>Recent jobs</h2></div><span class="count">{{ jobs().length }}</span></div>@for (job of jobs(); track job.id) { <article><span class="job-check">✓</span><div><strong>{{ job.type.replaceAll('_', ' ') | titlecase }}</strong><small>{{ job.createdAt | date:'shortTime' }}</small></div><span class="pill success">{{ job.state }}</span></article> } @empty { <p class="empty-state">Publish revision 4 to create packet and notification jobs.</p> }</section><section class="panel audit-panel"><div class="panel-heading"><div><p class="kicker">Accountability</p><h2>Audit trail</h2></div></div>@for (entry of audit(); track entry.id) { <article><span class="audit-mark"></span><div><strong>{{ entry.action.replaceAll('_', ' ') | titlecase }}</strong><p>{{ entry.detail }}</p><small>{{ entry.actor }} · {{ entry.createdAt | date:'short' }}</small></div></article> } @empty { <p class="empty-state">No activity recorded yet.</p> }</section></div>
+      <section class="page-heading">
+        <div>
+          <p class="kicker">System</p>
+          <h1>Operations</h1>
+          <p>Queued work, failure recovery, and an immutable demo activity trail.</p>
+        </div>
+        <div class="heading-actions">
+          <button class="ghost" [disabled]="busy() !== null" (click)="startRecoveryDrill()">
+            {{ busy() === 'recovery-drill' ? 'Queuing drill…' : 'Run recovery drill' }}</button
+          ><a class="ghost link-button" href="/api/docs" target="_blank" rel="noreferrer"
+            >API docs</a
+          ><button class="ghost" [disabled]="busy() !== null" (click)="resetDemo()">
+            {{ busy() === 'reset' ? 'Resetting…' : 'Reset demo' }}
+          </button>
+        </div>
+      </section>
+      <div class="ops-grid">
+        <section class="panel jobs">
+          <div class="panel-heading">
+            <div>
+              <p class="kicker">Queue activity</p>
+              <h2>Recent jobs</h2>
+            </div>
+            <span class="count">{{ jobs().length }}</span>
+          </div>
+          <article class="packet-artifact">
+            <span class="job-check" [class.pending]="packet().status !== 'READY'">{{
+              packet().status === 'READY' ? 'PDF' : '…'
+            }}</span>
+            <div>
+              <strong>Event packet · Revision {{ packet().revision }}</strong
+              ><small>{{
+                packet().status === 'READY'
+                  ? ((packet().byteSize || 0) / 1024 | number: '1.0-0') + ' KB · Private S3 object'
+                  : published()
+                    ? 'Worker is generating the S3 artifact'
+                    : 'Created after revision 4 is published'
+              }}</small>
+            </div>
+            <div class="job-actions">
+              <span class="pill" [class.success]="packet().status === 'READY'">{{
+                packet().status.replaceAll('_', ' ')
+              }}</span>
+              @if (packet().status === 'READY') {
+                <button
+                  class="table-action"
+                  [disabled]="busy() !== null"
+                  (click)="downloadPacket()"
+                >
+                  Download
+                </button>
+              }
+            </div>
+          </article>
+          @for (job of jobs(); track job.id) {
+            <article class="job-row" [class.failed]="job.state === 'FAILED'">
+              <span
+                class="job-check"
+                [class.pending]="job.state !== 'COMPLETE'"
+                [class.failed]="job.state === 'FAILED'"
+                >{{ job.state === 'COMPLETE' ? '✓' : job.state === 'FAILED' ? '!' : '…' }}</span
+              >
+              <div>
+                <strong>{{ job.type.replaceAll('_', ' ') | titlecase }}</strong
+                ><small>{{
+                  job.state === 'FAILED'
+                    ? job.error
+                    : (job.attempts ? 'Attempt ' + job.attempts + ' · ' : '') +
+                      (job.updatedAt | date: 'shortTime')
+                }}</small>
+              </div>
+              <div class="job-actions">
+                <span
+                  class="pill"
+                  [class.success]="job.state === 'COMPLETE'"
+                  [class.danger]="job.state === 'FAILED'"
+                  >{{ job.state }}</span
+                >
+                @if (job.state === 'FAILED') {
+                  <button
+                    class="table-action"
+                    [disabled]="busy() !== null"
+                    (click)="retryJob(job.id)"
+                  >
+                    {{ busy() === 'retry-' + job.id ? 'Retrying…' : 'Retry' }}
+                  </button>
+                }
+              </div>
+            </article>
+          } @empty {
+            <p class="empty-state">Publish revision 4 to create packet and notification jobs.</p>
+          }
+        </section>
+        <section class="panel audit-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="kicker">Accountability</p>
+              <h2>Audit trail</h2>
+            </div>
+          </div>
+          @for (entry of audit(); track entry.id) {
+            <article>
+              <span class="audit-mark"></span>
+              <div>
+                <strong>{{ entry.action.replaceAll('_', ' ') | titlecase }}</strong>
+                <p>{{ entry.detail }}</p>
+                <small>{{ entry.actor }} · {{ entry.createdAt | date: 'short' }}</small>
+              </div>
+            </article>
+          } @empty {
+            <p class="empty-state">No activity recorded yet.</p>
+          }
+        </section>
+      </div>
     } @else {
-      <section class="member-hero"><div class="member-hero-copy"><p class="kicker">Your Saturday</p><h1>Homecoming field show</h1><p>Everything you need, from call time to the last note.</p></div></section>
+      <section class="member-hero">
+        <div class="member-hero-copy">
+          <p class="kicker">Your Saturday</p>
+          <h1>Homecoming field show</h1>
+          <p>Everything you need, from call time to the last note.</p>
+        </div>
+      </section>
       <section class="member-wrap">
-        @if (published() && !acknowledged()) { <article class="change-alert" role="alert"><span>!</span><div><strong>Revision 4 needs your acknowledgment</strong><p>Review the updated packet and confirm you received it.</p></div><button class="primary" [disabled]="busy() !== null" (click)="acknowledge()">{{ busy() === 'acknowledge' ? 'Saving…' : 'Acknowledge revision' }}</button></article> } @else if (acknowledged()) { <article class="change-alert confirmed"><span>✓</span><div><strong>You’re all set</strong><p>Revision 4 acknowledged. The coordinator can see your confirmation.</p></div></article> }
+        @if (published() && !acknowledged()) {
+          <article class="change-alert" role="alert">
+            <span>!</span>
+            <div>
+              <strong>Revision 4 needs your acknowledgment</strong>
+              <p>Review the updated packet and confirm you received it.</p>
+            </div>
+            <button class="primary" [disabled]="busy() !== null" (click)="acknowledge()">
+              {{ busy() === 'acknowledge' ? 'Saving…' : 'Acknowledge revision' }}
+            </button>
+          </article>
+        } @else if (acknowledged()) {
+          <article class="change-alert confirmed">
+            <span>✓</span>
+            <div>
+              <strong>You’re all set</strong>
+              <p>Revision 4 acknowledged. The coordinator can see your confirmation.</p>
+            </div>
+          </article>
+        }
         @if (memberView() === 'week') {
-          <div class="member-grid"><section class="panel itinerary"><div class="panel-heading"><div><p class="kicker">October 18</p><h2>My itinerary</h2></div><span class="pill success">On track</span></div><ol><li><time>11:30 AM</time><div><strong>Check in</strong><small>Fischell Band Center</small></div></li><li><time>12:10 PM</time><div><strong>Rehearsal</strong><small>Tenor sax · Room A</small></div></li><li><time>12:55 PM</time><div><strong>Board Bus 2</strong><small>West entrance</small></div></li><li><time>2:05 PM</time><div><strong>Pregame show</strong><small>Schoellkopf Field</small></div></li></ol></section><div class="member-side"><section class="assignment-card"><p class="kicker">Your assignment</p><span class="big-icon">♫</span><h2>Tenor saxophone</h2><p>Part 2 · Instrument TS-014</p><button class="primary" (click)="openModal('packet')">Open event packet</button></section><div class="member-side-lower"><section class="packing-card"><p class="kicker">Bring with you</p><ul><li><span>✓</span> Full uniform</li><li><span>✓</span> Rain shell</li><li><span>✓</span> Music packet</li></ul></section><section class="member-weather" aria-labelledby="member-weather-title"><div class="weather-label"><p class="kicker" id="member-weather-title">Today’s conditions</p><span class="weather-live" [class.offline]="!weather().live"><i></i>{{ weather().live ? 'Live' : 'Offline' }}</span></div><strong>{{ weather().temperatureF === null ? '—' : weather().temperatureF + '°F' }}</strong><span>{{ weather().condition }}</span><small>Low {{ weather().lowF === null ? '—' : weather().lowF + '°' }} · High {{ weather().highF === null ? '—' : weather().highF + '°' }}</small><footer><span>Rain {{ weather().precipitationProbability === null ? '—' : weather().precipitationProbability + '%' }}</span><span>Wind {{ weather().windMph === null ? '—' : weather().windMph + ' mph' }}</span></footer></section></div></div></div>
+          <div class="member-grid">
+            <section class="panel itinerary">
+              <div class="panel-heading">
+                <div>
+                  <p class="kicker">October 18</p>
+                  <h2>My itinerary</h2>
+                </div>
+                <span class="pill success">On track</span>
+              </div>
+              <ol>
+                <li>
+                  <time>11:30 AM</time>
+                  <div><strong>Check in</strong><small>Fischell Band Center</small></div>
+                </li>
+                <li>
+                  <time>12:10 PM</time>
+                  <div><strong>Rehearsal</strong><small>Tenor sax · Room A</small></div>
+                </li>
+                <li>
+                  <time>12:55 PM</time>
+                  <div><strong>Board Bus 2</strong><small>West entrance</small></div>
+                </li>
+                <li>
+                  <time>2:05 PM</time>
+                  <div><strong>Pregame show</strong><small>Schoellkopf Field</small></div>
+                </li>
+              </ol>
+            </section>
+            <div class="member-side">
+              <section class="assignment-card">
+                <p class="kicker">Your assignment</p>
+                <span class="big-icon">♫</span>
+                <h2>Tenor saxophone</h2>
+                <p>Part 2 · Instrument TS-014</p>
+                <button class="primary" (click)="openModal('packet')">Open event packet</button>
+              </section>
+              <div class="member-side-lower">
+                <section class="packing-card">
+                  <p class="kicker">Bring with you</p>
+                  <ul>
+                    <li><span>✓</span> Full uniform</li>
+                    <li><span>✓</span> Rain shell</li>
+                    <li><span>✓</span> Music packet</li>
+                  </ul>
+                </section>
+                <section class="member-weather" aria-labelledby="member-weather-title">
+                  <div class="weather-label">
+                    <p class="kicker" id="member-weather-title">Today’s conditions</p>
+                    <span class="weather-live" [class.offline]="!weather().live"
+                      ><i></i>{{ weather().live ? 'Live' : 'Offline' }}</span
+                    >
+                  </div>
+                  <strong>{{
+                    weather().temperatureF === null ? '—' : weather().temperatureF + '°F'
+                  }}</strong
+                  ><span>{{ weather().condition }}</span
+                  ><small
+                    >Low {{ weather().lowF === null ? '—' : weather().lowF + '°' }} · High
+                    {{ weather().highF === null ? '—' : weather().highF + '°' }}</small
+                  >
+                  <footer>
+                    <span
+                      >Rain
+                      {{
+                        weather().precipitationProbability === null
+                          ? '—'
+                          : weather().precipitationProbability + '%'
+                      }}</span
+                    ><span
+                      >Wind
+                      {{ weather().windMph === null ? '—' : weather().windMph + ' mph' }}</span
+                    >
+                  </footer>
+                </section>
+              </div>
+            </div>
+          </div>
         } @else if (memberView() === 'music') {
-          <section class="member-module"><p class="kicker">Revision {{ published() ? '4' : '3' }}</p><h2>My music</h2><p class="module-copy">Your part packet is organized in show order and available for the offline event packet.</p><div class="music-list">@for (item of repertoire(); track item.id) { <article><span class="track-number">{{ item.position.toString().padStart(2, '0') }}</span><div><strong>{{ item.title }}</strong><small>Tenor sax part 2 · {{ item.duration }}</small></div><span class="pill success">Ready</span></article> }</div><button class="primary" (click)="openModal('packet')">Open full packet</button></section>
+          <section class="member-module">
+            <p class="kicker">Revision {{ published() ? '4' : '3' }}</p>
+            <h2>My music</h2>
+            <p class="module-copy">
+              Your part packet is organized in show order and available for the offline event
+              packet.
+            </p>
+            <div class="music-list">
+              @for (item of repertoire(); track item.id) {
+                <article>
+                  <span class="track-number">{{ item.position.toString().padStart(2, '0') }}</span>
+                  <div>
+                    <strong>{{ item.title }}</strong
+                    ><small>Tenor sax part 2 · {{ item.duration }}</small>
+                  </div>
+                  <span class="pill success">Ready</span>
+                </article>
+              }
+            </div>
+            <button class="primary" (click)="openModal('packet')">Open full packet</button>
+          </section>
         } @else {
-          <section class="member-module"><p class="kicker">Checked out to you</p><h2>My equipment</h2>@if (memberInstrument(); as gear) { <div class="personal-asset"><span class="asset-icon">♫</span><div><strong>{{ gear.type }} · {{ gear.assetTag }}</strong><p>Condition: {{ gear.condition }} · Return after halftime performance</p></div><span class="pill success">Ready</span></div> } @else { <p class="empty-state">No equipment assignment found.</p> }</section>
+          <section class="member-module">
+            <p class="kicker">Checked out to you</p>
+            <h2>My equipment</h2>
+            @if (memberInstrument(); as gear) {
+              <div class="personal-asset">
+                <span class="asset-icon">♫</span>
+                <div>
+                  <strong>{{ gear.type }} · {{ gear.assetTag }}</strong>
+                  <p>Condition: {{ gear.condition }} · Return after halftime performance</p>
+                </div>
+                <span class="pill success">Ready</span>
+              </div>
+            } @else {
+              <p class="empty-state">No equipment assignment found.</p>
+            }
+          </section>
         }
       </section>
     }
@@ -118,9 +825,125 @@
 </div>
 
 @if (modal(); as activeModal) {
-  <div class="modal-backdrop" (click)="closeModal()"><section class="modal-card" role="dialog" aria-modal="true" [attr.aria-labelledby]="activeModal + '-title'" (click)="$event.stopPropagation()"><button class="modal-close" aria-label="Close" (click)="closeModal()">×</button>
-    @if (activeModal === 'substitute') { <p class="kicker">Resolve coverage</p><h2 id="substitute-title">Assign a qualified substitute</h2><p class="modal-copy">This single transaction updates the part, instrument, travel seat, event readiness, and audit trail.</p><div class="candidate-list">@for (member of substituteCandidates(); track member.id) { <article><span class="mini-avatar">{{ member.name.slice(0, 1) }}{{ member.name.split(' ')[1].slice(0, 1) }}</span><div><strong>{{ member.name }}</strong><small>{{ member.instrument }} · Part qualified · Available</small></div><button class="primary" [disabled]="busy() !== null" (click)="resolveAbsence(member.id)">{{ busy() === 'assign' ? 'Assigning…' : 'Assign' }}</button></article> }</div> }
-    @else if (activeModal === 'acknowledgments') { <p class="kicker">Revision status</p><h2 id="acknowledgments-title">Acknowledgments</h2><div class="ack-list"><article><span class="mini-avatar">JL</span><div><strong>Jordan Lee</strong><small>Tenor sax · {{ published() ? acknowledged() ? 'Acknowledged revision 4' : 'Awaiting response' : 'Revision 4 not published' }}</small></div><span class="availability" [class.off]="!acknowledged()"><i></i>{{ acknowledged() ? 'Received' : 'Pending' }}</span></article><article><span class="mini-avatar">AR</span><div><strong>Alex Rivera</strong><small>Substitute · No published change yet</small></div><span class="availability"><i></i>Current</span></article></div> }
-    @else { <div class="packet-header"><div><p class="kicker">Offline event packet</p><h2 id="packet-title">Homecoming · Revision {{ published() ? '4' : '3' }}</h2><p>Saturday, October 18 · Schoellkopf Field</p></div><span class="packet-rev">R{{ published() ? '4' : '3' }}</span></div><div class="packet-grid"><div><span>Call</span><strong>11:30 AM</strong><small>Fischell Band Center</small></div><div><span>Travel</span><strong>Bus 2</strong><small>Board 12:55 PM</small></div><div><span>Uniform</span><strong>Full uniform</strong><small>Pack rain shell</small></div></div><h3>Run of show</h3><ol class="packet-run"><li><span>12:10</span>Music rehearsal</li><li><span>1:15</span>March to stadium</li><li><span>2:05</span>Pregame show</li><li><span>3:35</span>Halftime</li></ol><footer class="modal-actions"><button class="ghost" (click)="closeModal()">Close</button><button class="primary" (click)="printPacket()">Print / save PDF</button></footer> }
-  </section></div>
+  <div class="modal-backdrop" (click)="closeModal()">
+    <section
+      class="modal-card"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="activeModal + '-title'"
+      (click)="$event.stopPropagation()"
+    >
+      <button class="modal-close" aria-label="Close" (click)="closeModal()">×</button>
+      @if (activeModal === 'substitute') {
+        <p class="kicker">Resolve coverage</p>
+        <h2 id="substitute-title">Assign a qualified substitute</h2>
+        <p class="modal-copy">
+          This single transaction updates the part, instrument, travel seat, event readiness, and
+          audit trail.
+        </p>
+        <div class="candidate-list">
+          @for (member of substituteCandidates(); track member.id) {
+            <article>
+              <span class="mini-avatar"
+                >{{ member.name.slice(0, 1) }}{{ member.name.split(' ')[1].slice(0, 1) }}</span
+              >
+              <div>
+                <strong>{{ member.name }}</strong
+                ><small>{{ member.instrument }} · Part qualified · Available</small>
+              </div>
+              <button
+                class="primary"
+                [disabled]="busy() !== null"
+                (click)="resolveAbsence(member.id)"
+              >
+                {{ busy() === 'assign' ? 'Assigning…' : 'Assign' }}
+              </button>
+            </article>
+          }
+        </div>
+      } @else if (activeModal === 'acknowledgments') {
+        <p class="kicker">Revision status</p>
+        <h2 id="acknowledgments-title">Acknowledgments</h2>
+        <div class="ack-list">
+          <article>
+            <span class="mini-avatar">JL</span>
+            <div>
+              <strong>Jordan Lee</strong
+              ><small
+                >Tenor sax ·
+                {{
+                  published()
+                    ? acknowledged()
+                      ? 'Acknowledged revision 4'
+                      : 'Awaiting response'
+                    : 'Revision 4 not published'
+                }}</small
+              >
+            </div>
+            <span class="availability" [class.off]="!acknowledged()"
+              ><i></i>{{ acknowledged() ? 'Received' : 'Pending' }}</span
+            >
+          </article>
+          <article>
+            <span class="mini-avatar">AR</span>
+            <div>
+              <strong>Alex Rivera</strong><small>Substitute · No published change yet</small>
+            </div>
+            <span class="availability"><i></i>Current</span>
+          </article>
+        </div>
+      } @else {
+        <div class="packet-header">
+          <div>
+            <p class="kicker">Offline event packet</p>
+            <h2 id="packet-title">Homecoming · Revision {{ published() ? '4' : '3' }}</h2>
+            <p>Saturday, October 18 · Schoellkopf Field</p>
+          </div>
+          <span class="packet-rev">R{{ published() ? '4' : '3' }}</span>
+        </div>
+        <div class="packet-grid">
+          <div><span>Call</span><strong>11:30 AM</strong><small>Fischell Band Center</small></div>
+          <div><span>Travel</span><strong>Bus 1</strong><small>Board 12:55 PM</small></div>
+          <div><span>Uniform</span><strong>Full uniform</strong><small>Pack rain shell</small></div>
+        </div>
+        <h3>Run of show</h3>
+        <ol class="packet-run">
+          <li><span>12:10</span>Music rehearsal</li>
+          <li><span>1:15</span>March to stadium</li>
+          <li><span>2:05</span>Pregame show</li>
+          <li><span>3:35</span>Halftime</li>
+        </ol>
+        <p class="packet-generation">
+          <strong>{{
+            packet().status === 'READY'
+              ? 'Generated PDF ready'
+              : published()
+                ? 'Generating the private PDF…'
+                : 'Publish revision 4 to generate the private PDF.'
+          }}</strong
+          ><span>{{
+            packet().status === 'READY'
+              ? 'Stored in S3 and delivered with a five-minute signed URL.'
+              : 'The SQS worker creates and stores the final artifact.'
+          }}</span>
+        </p>
+        <footer class="modal-actions">
+          <button class="ghost" (click)="closeModal()">Close</button
+          ><button
+            class="primary"
+            [disabled]="packet().status !== 'READY' || busy() !== null"
+            (click)="downloadPacket()"
+          >
+            {{
+              busy() === 'packet-download'
+                ? 'Preparing…'
+                : packet().status === 'READY'
+                  ? 'Download generated PDF'
+                  : 'PDF not ready'
+            }}
+          </button>
+        </footer>
+      }
+    </section>
+  </div>
 }

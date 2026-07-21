@@ -37,6 +37,11 @@ export class AppController {
     return this.weatherService.getWeather();
   }
 
+  @Get('packet')
+  getPacketDownload() {
+    return this.appService.getPacketDownload();
+  }
+
   @Post('resolve-absence')
   @UseGuards(CoordinatorGuard)
   @ApiHeader({ name: 'x-demo-role', required: true, example: 'coordinator' })
@@ -97,6 +102,18 @@ export class AppController {
   @Post('acknowledge')
   acknowledge(@Headers('x-demo-user') actor = 'Jordan Lee') {
     return this.appService.acknowledge(actor);
+  }
+
+  @Post('jobs/:id/retry')
+  @UseGuards(CoordinatorGuard)
+  retryJob(@Headers('x-demo-user') actor: string, @Param('id') id: string) {
+    return this.appService.retryJob(actor || 'Maya Chen', id);
+  }
+
+  @Post('jobs/recovery-drill')
+  @UseGuards(CoordinatorGuard)
+  startRecoveryDrill(@Headers('x-demo-user') actor: string) {
+    return this.appService.startRecoveryDrill(actor || 'Maya Chen');
   }
 
   @Post('reset')

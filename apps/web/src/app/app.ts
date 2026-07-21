@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -54,9 +54,28 @@ interface DemoState {
   members: Member[];
   repertoire: RepertoireItem[];
   instruments: Instrument[];
-  jobs: Array<{ id: string; type: string; state: string; createdAt: string }>;
+  jobs: Array<{
+    id: string;
+    type: string;
+    state: string;
+    attempts: number;
+    maxAttempts: number;
+    error: string | null;
+    result: Record<string, unknown> | null;
+    createdAt: string;
+    updatedAt: string;
+  }>;
   audit: Array<{ id: string; actor: string; action: string; detail: string; createdAt: string }>;
+  packet: PacketStatus;
   weather: WeatherSnapshot;
+}
+
+interface PacketStatus {
+  status: 'NOT_GENERATED' | 'GENERATING' | 'READY';
+  revision: number;
+  byteSize: number | null;
+  checksum?: string;
+  generatedAt: string | null;
 }
 
 interface WeatherSnapshot {
@@ -81,7 +100,7 @@ interface WeatherSnapshot {
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App implements OnInit {
+export class App implements OnInit, OnDestroy {
   private readonly http = inject(HttpClient);
   private readonly coordinatorHeaders = new HttpHeaders({
     'x-demo-role': 'coordinator',
@@ -101,6 +120,12 @@ export class App implements OnInit {
   readonly instruments = signal<Instrument[]>([]);
   readonly jobs = signal<DemoState['jobs']>([]);
   readonly audit = signal<DemoState['audit']>([]);
+  readonly packet = signal<PacketStatus>({
+    status: 'NOT_GENERATED',
+    revision: 3,
+    byteSize: null,
+    generatedAt: null,
+  });
   readonly weather = signal<WeatherSnapshot>({
     source: 'Open-Meteo',
     live: false,
@@ -122,11 +147,14 @@ export class App implements OnInit {
   readonly errorMessage = signal('');
   readonly search = signal('');
   readonly modal = signal<'packet' | 'substitute' | 'acknowledgments' | null>(null);
+  private pollTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly filteredMembers = computed(() => {
     const query = this.search().trim().toLowerCase();
-    return this.members().filter((member) =>
-      !query || `${member.name} ${member.section} ${member.instrument}`.toLowerCase().includes(query),
+    return this.members().filter(
+      (member) =>
+        !query ||
+        `${member.name} ${member.section} ${member.instrument}`.toLowerCase().includes(query),
     );
   });
 
@@ -142,6 +170,10 @@ export class App implements OnInit {
 
   ngOnInit(): void {
     this.refreshState();
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollTimer) clearTimeout(this.pollTimer);
   }
 
   selectView(view: View): void {
@@ -172,7 +204,11 @@ export class App implements OnInit {
 
   resolveAbsence(memberId: string): void {
     this.mutate('assign', () =>
-      this.http.post('/api/demo/resolve-absence', { memberId }, { headers: this.coordinatorHeaders }),
+      this.http.post(
+        '/api/demo/resolve-absence',
+        { memberId },
+        { headers: this.coordinatorHeaders },
+      ),
     );
   }
 
@@ -184,9 +220,13 @@ export class App implements OnInit {
 
   acknowledge(): void {
     this.mutate('acknowledge', () =>
-      this.http.post('/api/demo/acknowledge', {}, {
-        headers: new HttpHeaders({ 'x-demo-user': 'Jordan Lee' }),
-      }),
+      this.http.post(
+        '/api/demo/acknowledge',
+        {},
+        {
+          headers: new HttpHeaders({ 'x-demo-user': 'Jordan Lee' }),
+        },
+      ),
     );
   }
 
@@ -216,8 +256,18 @@ export class App implements OnInit {
   }
 
   cycleCondition(instrument: Instrument): void {
-    const next = instrument.condition === 'good' ? 'attention' : instrument.condition === 'attention' ? 'repair' : 'good';
-    const note = next === 'good' ? '' : next === 'attention' ? 'Inspect before Saturday call time.' : 'Hold from service pending repair.';
+    const next =
+      instrument.condition === 'good'
+        ? 'attention'
+        : instrument.condition === 'attention'
+          ? 'repair'
+          : 'good';
+    const note =
+      next === 'good'
+        ? ''
+        : next === 'attention'
+          ? 'Inspect before Saturday call time.'
+          : 'Hold from service pending repair.';
     this.mutate(`gear-${instrument.id}`, () =>
       this.http.patch(
         `/api/demo/instruments/${instrument.id}/condition`,
@@ -233,8 +283,37 @@ export class App implements OnInit {
     );
   }
 
-  printPacket(): void {
-    window.print();
+  retryJob(jobId: string): void {
+    this.mutate(`retry-${jobId}`, () =>
+      this.http.post(`/api/demo/jobs/${jobId}/retry`, {}, { headers: this.coordinatorHeaders }),
+    );
+  }
+
+  startRecoveryDrill(): void {
+    this.mutate('recovery-drill', () =>
+      this.http.post('/api/demo/jobs/recovery-drill', {}, { headers: this.coordinatorHeaders }),
+    );
+  }
+
+  downloadPacket(): void {
+    this.busy.set('packet-download');
+    this.errorMessage.set('');
+    this.http.get<{ downloadUrl: string; revision: number }>('/api/demo/packet').subscribe({
+      next: ({ downloadUrl }) => {
+        this.busy.set(null);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.busy.set(null);
+        this.errorMessage.set(error.error?.message ?? 'The generated packet is not available yet.');
+      },
+    });
   }
 
   private mutate(key: string, request: () => Observable<unknown>): void {
@@ -248,13 +327,15 @@ export class App implements OnInit {
       error: (error: HttpErrorResponse) => {
         this.busy.set(null);
         this.apiConnected.set(false);
-        this.errorMessage.set(error.error?.message ?? 'That action could not be completed. Try again.');
+        this.errorMessage.set(
+          error.error?.message ?? 'That action could not be completed. Try again.',
+        );
       },
     });
   }
 
-  private refreshState(): void {
-    this.loading.set(true);
+  private refreshState(showLoading = true): void {
+    if (showLoading) this.loading.set(true);
     this.http.get<DemoState>('/api/demo/state').subscribe({
       next: (state) => this.applyState(state),
       error: () => {
@@ -281,6 +362,18 @@ export class App implements OnInit {
     this.instruments.set(state.instruments);
     this.jobs.set(state.jobs);
     this.audit.set(state.audit);
+    this.packet.set(state.packet);
     this.weather.set(state.weather);
+    this.scheduleJobPoll();
+  }
+
+  private scheduleJobPoll(): void {
+    if (this.pollTimer) clearTimeout(this.pollTimer);
+    const active = this.jobs().some((job) =>
+      ['QUEUED', 'PROCESSING', 'RETRYING'].includes(job.state),
+    );
+    if (active) {
+      this.pollTimer = setTimeout(() => this.refreshState(false), 800);
+    }
   }
 }

@@ -18,7 +18,8 @@ Open <http://localhost:8080>. Stop services with `docker compose down`. The name
 2. Assign Alex Rivera.
 3. Publish revision 4.
 4. Switch to the member view and acknowledge the update.
-5. Confirm readiness is 100%, three jobs appear in Operations, and the audit trail records the actions.
+5. Confirm the three publish jobs complete, the packet artifact says **Private S3 object**, and its Download action returns a PDF.
+6. Run **Recovery drill**, wait for the third failed attempt, then use **Retry** and confirm the same job completes.
 
 Use **Reset demo** to restore the opening state. API documentation is available at <http://localhost:8080/api/docs>.
 
@@ -28,6 +29,8 @@ Use **Reset demo** to restore the opening state. API documentation is available 
 curl --fail http://localhost:8080/api/demo/health
 docker compose ps
 docker compose logs --tail=100 api
+docker compose logs --tail=100 worker
+docker compose logs --tail=100 localstack
 docker compose logs --tail=100 mysql
 docker compose logs --tail=100 web
 ```
@@ -38,12 +41,14 @@ API access logs are structured JSON and include method, path, status, duration, 
 
 - `8080` already in use: stop the conflicting local process or change the host-side web port.
 - API unhealthy: check MySQL health first, then API logs. The API retries initial database connection and automatically applies checked-in migrations.
+- Packet remains in Generating: check `worker` logs, then confirm `bandboard-jobs` exists in LocalStack and the worker can reach S3.
+- Job reaches Failed: read its safe error text in Operations, check the DLQ and worker logs, correct the cause, then replay with **Retry**.
 - UI shows an action error: leave the state unchanged, read the actionable alert, and inspect API logs by request ID.
 - Stale demo state: use **Reset demo**; do not delete the volume merely to reset workflow data.
 
 ## Release and rollback
 
-GitHub Actions must pass lint, builds, API unit/integration tests, Angular browser tests, dependency audit, secret scan, and both container builds. For this local demo, rollback means checking out the last known-good commit and rebuilding Compose images. No hosted release, database backup schedule, or automated recovery objective exists; those are required before production use.
+GitHub Actions must pass lint, builds, API unit/integration tests, Angular browser tests, dependency audit, secret scan, and the Compose S3/SQS workflow. Run `./scripts/verify-async-workflow.sh` locally against the running stack for the same proof. For this local demo, rollback means checking out the last known-good commit and rebuilding Compose images. No hosted release, database backup schedule, or automated recovery objective exists; those are required before production use.
 
 ## Escalation boundary
 
