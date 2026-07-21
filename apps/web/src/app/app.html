@@ -3,7 +3,8 @@
 <div class="app-shell" [class.member-mode]="role() === 'member'">
   <aside class="sidebar" aria-label="Primary navigation">
     <div class="brand" aria-label="Bandboard home">
-      <img src="/assets/big-red-marching-band-logo.png" alt="Cornell Big Red Marching Band" />
+      <span class="brand-emblem" aria-hidden="true"><img src="/assets/big-red-marching-band-logo.png" alt="" /></span>
+      <span class="brand-wordmark"><small>Cornell</small><strong>Big Red</strong><span>Marching Band</span></span>
     </div>
 
     @if (role() === 'coordinator') {
@@ -77,9 +78,10 @@
           @if (!absenceResolved()) { <article class="compact-issue"><span class="dot red"></span><div><strong>Bus 2 is at capacity</strong><small>Assigning the qualified substitute also resolves travel</small></div><button aria-label="Resolve transportation conflict" (click)="openModal('substitute')">→</button></article> }
         </section>
 
-        <aside class="right-rail">
-          <section class="panel schedule"><div class="panel-heading"><div><p class="kicker">Run of show</p><h2>Saturday</h2></div><button class="packet-link" (click)="openModal('packet')">Packet</button></div><ol><li><time>11:30</time><div><strong>Call time</strong><small>Fischell Band Center</small></div></li><li><time>12:10</time><div><strong>Music rehearsal</strong><small>Rehearsal room A</small></div></li><li><time>1:15</time><div><strong>March to stadium</strong><small>Form up at west entrance</small></div></li><li><time>2:05</time><div><strong>Pregame show</strong><small>Schoellkopf Field</small></div></li><li><time>3:35</time><div><strong>Halftime</strong><small>8:30 performance block</small></div></li></ol></section>
+        <section class="panel schedule"><div class="panel-heading"><div><p class="kicker">Run of show</p><h2>Saturday</h2></div><button class="packet-link" (click)="openModal('packet')">Packet</button></div><ol><li><time>11:30</time><div><strong>Call time</strong><small>Fischell Band Center</small></div></li><li><time>12:10</time><div><strong>Music rehearsal</strong><small>Rehearsal room A</small></div></li><li><time>1:15</time><div><strong>March to stadium</strong><small>Form up at west entrance</small></div></li><li><time>2:05</time><div><strong>Pregame show</strong><small>Schoellkopf Field</small></div></li><li><time>3:35</time><div><strong>Halftime</strong><small>8:30 performance block</small></div></li></ol></section>
+        <aside class="conditions-rail">
           <section class="weather-card" aria-labelledby="coordinator-weather-title"><div class="weather-copy"><div class="weather-label"><p class="kicker" id="coordinator-weather-title">Field conditions</p><span class="weather-live" [class.offline]="!weather().live"><i></i>{{ weather().live ? 'Live API' : 'Unavailable' }}</span></div><strong>{{ weather().temperatureF === null ? '—' : weather().temperatureF + '°' }}</strong><span>{{ weather().condition }}</span><small>{{ weather().location }} · Feels like {{ weather().apparentTemperatureF === null ? '—' : weather().apparentTemperatureF + '°' }}</small></div><footer><span>Rain <b>{{ weather().precipitationProbability === null ? '—' : weather().precipitationProbability + '%' }}</b></span><span>Wind <b>{{ weather().windMph === null ? '—' : weather().windMph + ' mph' }}</b></span><span>Gusts <b>{{ weather().windGustMph === null ? '—' : weather().windGustMph + ' mph' }}</b></span></footer><p class="weather-source">Updated {{ weather().fetchedAt | date:'shortTime' }} · {{ weather().source }}</p></section>
+          <section class="next-card"><div><p class="kicker">On deck</p><small>Next milestone</small><strong>Music rehearsal</strong><span>Starts at 12:10 PM · Room A</span></div><button class="packet-link" (click)="openModal('packet')">View packet →</button></section>
         </aside>
       </div>
       <section class="command-summary" aria-label="Operational summary">
