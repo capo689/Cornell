@@ -37,6 +37,12 @@ jobs:
           node-version: 24
           cache: npm
 
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - uses: docker/setup-buildx-action@v3
+
       - uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: arn:aws:iam::984124409912:role/bandboard-github-deploy
