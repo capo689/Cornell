@@ -88,7 +88,7 @@ flowchart LR
 
 CloudFront is the only public application entry point. Static assets come from a private origin-access-controlled S3 bucket. `/api/*` requests pass through an ALB whose security group admits only the AWS-managed CloudFront origin-facing prefix list. RDS is non-public. API and worker use separate least-privilege task roles.
 
-The local environment preserves the same application contracts with Nginx, MySQL, and LocalStack, so CI exercises the S3/SQS behavior without cloud credentials.
+CI recreates the same MySQL, S3, SQS, worker, and web contracts in an isolated runner, so the infrastructure workflow is tested on every change without exposing cloud credentials.
 
 ## The stack
 
@@ -103,45 +103,26 @@ The local environment preserves the same application contracts with Nginx, MySQL
 | Cloud | CloudFront, ALB, ARM64 ECS Fargate, RDS, S3, SQS, Secrets Manager | Managed HTTPS deployment with private state and independently deployed compute |
 | Operations | CloudWatch, AWS Budgets | Central logs, queue-age/DLQ/unhealthy-target alarms, monthly cost tracking |
 | Delivery | CloudFormation, ECR, GitHub Actions OIDC | Repeatable infrastructure, immutable images, no stored AWS keys, circuit-breaker rollback |
-| Local/CI | Docker Compose, Nginx, LocalStack, GitHub Actions | Production-shaped local environment and end-to-end infrastructure-contract testing |
+| CI simulation | Docker Compose, Nginx, LocalStack, GitHub Actions | Isolated end-to-end infrastructure-contract testing on every change |
 
-## Testing the system
+## How to evaluate it remotely
 
-### One-command local system test
+Nothing needs to be installed. The portfolio environment is live, seeded, and resettable.
 
-Requirements: Docker Desktop with Compose.
+| What to test | How to test it | What it proves |
+| --- | --- | --- |
+| Opening case | [Launch Bandboard](https://d1vlahcgbfcf5u.cloudfront.net) | Public HTTPS delivery, live API state, correct 82% readiness visualization |
+| Business transaction | Assign Alex Rivera from **Needs attention** | Server-owned qualification rules, relational update, travel and coverage resolution |
+| Durable workflow | Publish revision 4, then open **Operations** | API returns before three independent SQS jobs complete in the worker |
+| Private artifact | Download the generated event packet | PDF generation, private S3 storage, short-lived signed retrieval |
+| Two user perspectives | Switch to **Member** and acknowledge revision 4 | Purposeful demo-role UX and state shared through the API/database |
+| Failure recovery | Run **Recovery drill**, observe three attempts, then select **Retry** | SQS retry, DLQ redrive, visible failure state, operator replay |
+| Supporting modules | Change availability, reorder repertoire, report equipment condition | Functional sections, validation, audit attribution, persistent state |
+| Clean restart | Select **Reset demo** | Deterministic return to the canonical 82% scenario |
+| Service health | [Open the public health endpoint](https://d1vlahcgbfcf5u.cloudfront.net/api/demo/health) | CloudFront → ALB → ECS API → RDS health path |
+| Delivery evidence | [Inspect GitHub Actions](https://github.com/capo689/Cornell/actions/workflows/ci.yml) | Current build, tests, container workflow, audit gate, and secret scan |
 
-```bash
-docker compose up --build -d
-./scripts/verify-async-workflow.sh
-```
-
-Open <http://localhost:8080>. The verification script proves:
-
-- API and worker health
-- substitute assignment and publication
-- three asynchronous jobs completing
-- real PDF generation
-- private S3-compatible storage and signed retrieval
-- three worker failures and a new DLQ arrival
-- operator replay of the same durable job
-
-Stop and remove the disposable local data with:
-
-```bash
-docker compose down -v
-```
-
-### Code-level gates
-
-```bash
-npm ci
-npm run lint
-npm run build
-npm test
-npm run test:e2e --workspace api -- --runInBand
-npm audit --audit-level=high
-```
+### Automated evidence
 
 | Gate | Coverage |
 | --- | --- |
@@ -152,33 +133,7 @@ npm audit --audit-level=high
 | Secret scan | Full-history Gitleaks scan |
 | Dependency gate | Fails CI on high or critical audit findings |
 
-The same gates run on every pull request in `.github/workflows/ci.yml`.
-
-### Live AWS proof
-
-With the configured AWS CLI profile:
-
-```bash
-AWS_PROFILE=bandboard-deploy AWS_REGION=us-east-1 ./scripts/aws-status.sh
-AWS_PROFILE=bandboard-deploy AWS_REGION=us-east-1 ./scripts/verify-aws-workflow.sh
-```
-
-The remote script executes the complete workflow against CloudFront, RDS, SQS, the independent Fargate worker, and private S3. It verifies the downloaded PDF signature, observes a real DLQ increase, replays the job, then resets demo state and purges the synthetic drill message.
-
-## Running in development
-
-```bash
-npm install
-docker compose up mysql
-npm run dev:api
-npm run dev:web
-```
-
-- Angular development server: <http://localhost:4200>
-- NestJS API: <http://localhost:3000/api/demo>
-- Swagger UI: <http://localhost:3000/api/docs>
-
-The Angular server proxies `/api` to NestJS. The API runs checked-in migrations; the worker intentionally does not, preventing concurrent migration ownership.
+The repository's [live AWS verification script](scripts/verify-aws-workflow.sh) exercises the complete managed path against CloudFront, RDS, SQS, the independent Fargate worker, and private S3. It validates the downloaded PDF signature, observes a real DLQ increase, replays the durable job, then restores the public demo and purges the synthetic drill message.
 
 ## Deployment and rollback
 
