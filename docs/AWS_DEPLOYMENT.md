@@ -4,7 +4,7 @@
 
 The demo uses one public CloudFront URL. CloudFront serves the compiled Angular application from a private S3 bucket and forwards `/api/*` to an Application Load Balancer. The load balancer admits only the AWS-managed CloudFront origin-facing prefix list. Two independent ARM64 ECS Fargate services run the NestJS API and worker. RDS MySQL is non-public, packet objects remain in a second private S3 bucket, and SQS owns retry and dead-letter delivery.
 
-CloudFormation in `infra/aws` also creates CloudWatch log groups and alarms for queue age, dead-letter arrivals, and unhealthy targets. RDS manages its own master secret in Secrets Manager. GitHub Actions receives short-lived AWS credentials through repository- and branch-scoped OIDC; the repository stores no AWS access key.
+CloudFormation in `infra/aws` also creates CloudWatch log groups and alarms for queue age, dead-letter arrivals, and unhealthy targets. RDS manages its own master secret in Secrets Manager. GitHub Actions receives short-lived AWS credentials through immutable repository-ID- and branch-scoped OIDC; the repository stores no AWS access key.
 
 ## Initial deployment
 

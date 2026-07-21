@@ -308,7 +308,7 @@ Resources:
               StringEquals:
                 token.actions.githubusercontent.com:aud: sts.amazonaws.com
               StringLike:
-                token.actions.githubusercontent.com:sub: repo:capo689/Cornell:ref:refs/heads/main
+                token.actions.githubusercontent.com:sub: repo:capo689@81535747/Cornell@1307944499:ref:refs/heads/main
       Policies:
         - PolicyName: bandboard-continuous-deployment
           PolicyDocument:
